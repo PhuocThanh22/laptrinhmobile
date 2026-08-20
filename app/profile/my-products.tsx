@@ -10,7 +10,7 @@ import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import { Countdown } from '@/components/Countdown';
 import { EmptyState } from '@/components/EmptyState';
-import { Loading } from '@/components/Loading';
+import { ListRowSkeleton } from '@/components/Skeleton';
 import { Screen } from '@/components/Screen';
 import { Colors } from '@/constants/colors';
 import { DEFAULT_PRODUCT_IMAGE } from '@/constants/config';
@@ -95,7 +95,7 @@ export default function MyProductsScreen() {
       <AppHeader title="Sản phẩm của tôi" onBack={() => router.back()} />
 
       {loading ? (
-        <Loading />
+        <ListRowSkeleton rows={4} imageSize={92} />
       ) : (
         <FlatList
           data={products}

@@ -10,11 +10,13 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { AuctionCard } from '@/components/AuctionCard';
 import { Avatar } from '@/components/Avatar';
+import { CartButton } from '@/components/CartButton';
 import { CategoryChip } from '@/components/CategoryChip';
-import { Loading } from '@/components/Loading';
+import { HomeSkeleton } from '@/components/Skeleton';
 import { ErrorState } from '@/components/ErrorState';
 import { ProductCard } from '@/components/ProductCard';
 import { Screen } from '@/components/Screen';
@@ -70,16 +72,20 @@ export default function HomeScreen() {
           <Text style={styles.brand}>{APP_NAME}</Text>
           <Text style={styles.tagline}>Sàn đồ cũ sinh viên · Đấu giá nhẹ</Text>
         </View>
-        <Pressable onPress={() => router.push('/(tabs)/profile')} style={styles.avatarBtn}>
-          <Avatar name={user?.name} uri={user?.avatar} size={40} />
-        </Pressable>
+        <View style={styles.headerRight}>
+          <CartButton size={40} />
+          <Pressable onPress={() => router.push('/(tabs)/profile')} style={styles.avatarBtn}>
+            <Avatar name={user?.name} uri={user?.avatar} size={40} />
+          </Pressable>
+        </View>
       </View>
 
       {loading ? (
-        <Loading text="Đang tải sản phẩm..." />
+        <HomeSkeleton />
       ) : error ? (
         <ErrorState message={error} onRetry={load} />
       ) : (
+        <Animated.View entering={FadeIn.duration(300)} style={styles.flex}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -147,12 +153,16 @@ export default function HomeScreen() {
           )}
           <View style={styles.bottomSpace} />
         </ScrollView>
+        </Animated.View>
       )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -173,6 +183,11 @@ const styles = StyleSheet.create({
   },
   avatarBtn: {
     borderRadius: 20,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   searchWrap: {
     paddingHorizontal: 16,

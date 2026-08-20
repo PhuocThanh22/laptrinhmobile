@@ -14,7 +14,7 @@ import {
 import { AppHeader } from '@/components/AppHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { Loading } from '@/components/Loading';
+import { ProductGridSkeleton } from '@/components/Skeleton';
 import { ProductCard } from '@/components/ProductCard';
 import { Screen } from '@/components/Screen';
 import { SearchBar } from '@/components/SearchBar';
@@ -78,7 +78,7 @@ export default function SearchScreen() {
     <Screen>
       <AppHeader title="Tìm kiếm" onBack={() => router.back()} />
       <View style={styles.searchWrap}>
-        <SearchBar value={query} onChangeText={setQuery} autoFocus={!params.q} />
+        <SearchBar value={query} onChangeText={setQuery} />
       </View>
 
       {/* Category chips */}
@@ -121,7 +121,7 @@ export default function SearchScreen() {
       </View>
 
       {loading ? (
-        <Loading text="Đang tìm kiếm..." />
+        <ProductGridSkeleton count={4} />
       ) : error ? (
         <ErrorState message={error} onRetry={load} />
       ) : (

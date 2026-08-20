@@ -29,6 +29,7 @@ export interface NewProductInput {
   description: string;
   category: string;
   images: string[];
+  video?: string | null;
   condition: string;
   saleType: SaleType;
   price?: number;
@@ -87,6 +88,7 @@ export async function createProduct(sellerId: string, input: NewProductInput): P
     description: input.description.trim(),
     category: input.category,
     images: input.images,
+    video: input.video ?? null,
     condition: input.condition,
     saleType: input.saleType,
     createdAt: now,

@@ -67,6 +67,7 @@ export default function EditProductScreen() {
 
   const initial: ProductFormValues = {
     images: product.images ?? [],
+    video: product.video ?? undefined,
     name: product.name,
     category: product.category,
     condition: product.condition,

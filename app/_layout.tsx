@@ -33,6 +33,7 @@ function RootNavigator() {
         <Stack.Screen name="orders/checkout" />
         <Stack.Screen name="orders/success" />
         <Stack.Screen name="orders/my-orders" />
+        <Stack.Screen name="cart" />
         <Stack.Screen name="profile/my-products" />
         <Stack.Screen name="profile/my-bids" />
         <Stack.Screen name="profile/account" />

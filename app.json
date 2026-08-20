@@ -47,7 +47,8 @@
           "photosPermission": "MiniShop cần quyền truy cập thư viện ảnh để bạn có thể đăng sản phẩm."
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-video"
     ],
     "extra": {
       "eas": {

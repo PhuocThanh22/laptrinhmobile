@@ -29,6 +29,13 @@ export const cloudinaryConfig = {
   uploadPreset: process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? '',
 };
 
+/**
+ * URL backend gửi email xác thực (server/ - Brevo).
+ * Để trống -> app fallback dùng Firebase gửi email mặc định.
+ */
+export const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? '';
+export const isApiConfigured = Boolean(apiUrl);
+
 /** Firebase đã được cấu hình đầy đủ chưa (đủ apiKey + projectId). */
 export const isFirebaseConfigured = Boolean(
   firebaseConfig.apiKey && firebaseConfig.projectId,

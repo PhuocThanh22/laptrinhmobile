@@ -6,7 +6,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppHeader } from '@/components/AppHeader';
 import { Badge } from '@/components/Badge';
 import { EmptyState } from '@/components/EmptyState';
-import { Loading } from '@/components/Loading';
+import { ListRowSkeleton } from '@/components/Skeleton';
 import { Screen } from '@/components/Screen';
 import { Colors } from '@/constants/colors';
 import { DEFAULT_PRODUCT_IMAGE } from '@/constants/config';
@@ -65,7 +65,7 @@ export default function MyBidsScreen() {
       <AppHeader title="Phiếu đấu giá của tôi" onBack={() => router.back()} />
 
       {loading ? (
-        <Loading />
+        <ListRowSkeleton rows={3} />
       ) : (
         <FlatList
           data={entries}

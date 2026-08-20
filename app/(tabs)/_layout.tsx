@@ -3,7 +3,6 @@ import { Tabs } from 'expo-router';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/colors';
-import { useCart } from '@/context/CartContext';
 
 function TabIcon({
   name,
@@ -18,8 +17,6 @@ function TabIcon({
 }
 
 export default function TabLayout() {
-  const { totalItems } = useCart();
-
   return (
     <Tabs
       screenOptions={{
@@ -30,13 +27,17 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: Colors.card,
           borderTopColor: Colors.border,
-          height: 62,
-          paddingBottom: 8,
-          paddingTop: 6,
+          height: 82,
+          paddingBottom: 22,
+          paddingTop: 5,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
+          marginBottom: 2,
+        },
+        tabBarItemStyle: {
+          paddingTop: 4,
         },
       }}>
       <Tabs.Screen
@@ -61,12 +62,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="cart"
+        name="orders"
         options={{
-          title: 'Giỏ hàng',
-          tabBarBadge: totalItems > 0 ? totalItems : undefined,
-          tabBarBadgeStyle: { backgroundColor: Colors.danger, fontSize: 10 },
-          tabBarIcon: ({ color, size }) => <TabIcon name="shopping-cart" color={color} size={size} />,
+          title: 'Đơn hàng',
+          tabBarIcon: ({ color, size }) => <TabIcon name="receipt-long" color={color} size={size} />,
         }}
       />
       <Tabs.Screen

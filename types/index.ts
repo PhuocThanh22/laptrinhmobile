@@ -18,6 +18,7 @@ export interface Product {
   description: string;
   category: string;
   images: string[];
+  video?: string;
   condition: string;
 
   saleType: SaleType;

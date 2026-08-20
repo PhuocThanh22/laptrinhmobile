@@ -3,10 +3,12 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { QuantityStepper } from '@/components/QuantityStepper';
 import { Screen } from '@/components/Screen';
+import { ListRowSkeleton } from '@/components/Skeleton';
 import { Colors } from '@/constants/colors';
 import { DEFAULT_PRODUCT_IMAGE } from '@/constants/config';
 import { useCart } from '@/context/CartContext';
@@ -17,12 +19,11 @@ export default function CartScreen() {
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <Text style={styles.title}>Giỏ hàng</Text>
-        <Text style={styles.subtitle}>{totalItems} sản phẩm</Text>
-      </View>
+      <AppHeader title="Giỏ hàng" subtitle={`${totalItems} sản phẩm`} onBack={() => router.back()} />
 
-      {!loading && items.length === 0 ? (
+      {loading ? (
+        <ListRowSkeleton rows={3} />
+      ) : items.length === 0 ? (
         <EmptyState
           icon="shopping-cart"
           title="Giỏ hàng trống"
@@ -87,21 +88,6 @@ export default function CartScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: Colors.text,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 2,
-  },
   content: {
     padding: 16,
   },

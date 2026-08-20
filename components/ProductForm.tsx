@@ -1,6 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useState } from 'react';
 import Toast from 'react-native-toast-message';
@@ -13,11 +14,12 @@ import { CATEGORIES, CONDITIONS } from '@/constants/categories';
 import { Colors } from '@/constants/colors';
 import { getErrorMessage } from '@/utils/errors';
 import { parseNumberInput, validateProductForm } from '@/utils/validation';
-import { uploadImages } from '@/services/cloudinaryService';
+import { uploadImages, uploadVideo } from '@/services/cloudinaryService';
 import type { NewProductInput } from '@/services/productService';
 
 export interface ProductFormValues {
   images: string[];
+  video?: string;
   name: string;
   category: string;
   condition: string;
@@ -30,6 +32,11 @@ export interface ProductFormValues {
 }
 
 interface ImageItem {
+  uri: string;
+  isRemote: boolean;
+}
+
+interface VideoItem {
   uri: string;
   isRemote: boolean;
 }
@@ -52,6 +59,13 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
   const [images, setImages] = useState<ImageItem[]>(
     initial?.images.map((uri) => ({ uri, isRemote: true })) ?? [],
   );
+  const [video, setVideo] = useState<VideoItem | null>(
+    initial?.video ? { uri: initial.video, isRemote: true } : null,
+  );
+  const videoPlayer = useVideoPlayer(video?.uri ?? null, (player) => {
+    player.loop = true;
+    player.play();
+  });
   const [name, setName] = useState(initial?.name ?? '');
   const [category, setCategory] = useState(initial?.category ?? '');
   const [condition, setCondition] = useState(initial?.condition ?? 'used');
@@ -88,6 +102,26 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const pickVideo = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Toast.show({ type: 'error', text1: 'Cần quyền truy cập thư viện ảnh' });
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+      allowsMultipleSelection: false,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setVideo({ uri: result.assets[0].uri, isRemote: false });
+    }
+  };
+
+  const removeVideo = () => {
+    setVideo(null);
+  };
+
   const handleSubmit = async () => {
     const validation = validateProductForm({
       images: images.map((i) => i.uri),
@@ -113,6 +147,11 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
       const uploaded = localUris.length ? await uploadImages(localUris) : [];
       const allUrls = [...remoteUris, ...uploaded];
 
+      let videoUrl = video?.isRemote ? video.uri : undefined;
+      if (video && !video.isRemote) {
+        videoUrl = await uploadVideo(video.uri);
+      }
+
       const input: NewProductInput =
         saleType === 'auction'
           ? {
@@ -120,6 +159,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
               description,
               category,
               images: allUrls,
+              video: videoUrl ?? null,
               condition,
               saleType,
               startingPrice: parseNumberInput(startingPrice),
@@ -131,6 +171,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
               description,
               category,
               images: allUrls,
+              video: videoUrl ?? null,
               condition,
               saleType,
               price: parseNumberInput(price),
@@ -172,6 +213,33 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
           </Pressable>
         ) : null}
       </View>
+
+      {/* Video (không bắt buộc) */}
+      <Text style={styles.label}>Video sản phẩm (không bắt buộc)</Text>
+      {video ? (
+        <View style={styles.videoWrap}>
+          <VideoView
+            player={videoPlayer}
+            style={styles.video}
+            contentFit="cover"
+            nativeControls
+          />
+          <View style={styles.videoMeta}>
+            <Text style={styles.videoMetaText} numberOfLines={1}>
+              {video.isRemote ? 'Video đã lưu' : 'Video mới chọn'}
+            </Text>
+            <Pressable style={styles.videoRemove} onPress={removeVideo} hitSlop={6}>
+              <MaterialIcons name="close" size={16} color={Colors.white} />
+              <Text style={styles.videoRemoveText}>Bỏ video</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <Pressable style={styles.addVideo} onPress={pickVideo}>
+          <MaterialIcons name="videocam" size={26} color={Colors.primary} />
+          <Text style={styles.addVideoText}>Thêm video</Text>
+        </Pressable>
+      )}
 
       <TextField
         label="Tên sản phẩm"
@@ -357,6 +425,65 @@ const styles = StyleSheet.create({
   },
   addImageText: {
     fontSize: 11,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  videoWrap: {
+    marginBottom: 16,
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.card,
+  },
+  video: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    backgroundColor: Colors.black,
+  },
+  videoMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  videoMetaText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  videoRemove: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.danger,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  videoRemoveText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  addVideo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 56,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primarySoft,
+    marginBottom: 16,
+  },
+  addVideoText: {
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.primary,
   },

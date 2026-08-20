@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import { AppHeader } from '@/components/AppHeader';
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
+import { CartButton } from '@/components/CartButton';
 import { EmptyState } from '@/components/EmptyState';
 import { OrderCardSkeleton } from '@/components/Skeleton';
 import { Screen } from '@/components/Screen';
@@ -33,7 +33,7 @@ const SELLER_ACTIONS: { status: OrderStatus; label: string; next: OrderStatus }[
   { status: 'shipping', label: 'Hoàn thành', next: 'completed' },
 ];
 
-export default function MyOrdersScreen() {
+export default function OrdersTabScreen() {
   const { user } = useAuth();
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
   const [orders, setOrders] = useState<Order[]>([]);
@@ -77,7 +77,13 @@ export default function MyOrdersScreen() {
 
   return (
     <Screen>
-      <AppHeader title="Đơn hàng của tôi" onBack={() => router.back()} />
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>Đơn hàng của tôi</Text>
+          <Text style={styles.subtitle}>{orders.length} đơn hàng</Text>
+        </View>
+        <CartButton size={40} />
+      </View>
       <View style={styles.segmentWrap}>
         <Segmented
           options={[
@@ -131,7 +137,7 @@ export default function MyOrdersScreen() {
 
               <View style={styles.divider} />
               <View style={styles.footer}>
-                <View>
+                <View style={styles.footerInfo}>
                   <Text style={styles.receiver}>{item.receiverName} · {item.phone}</Text>
                   <Text style={styles.address} numberOfLines={1}>{item.address}</Text>
                 </View>
@@ -165,6 +171,24 @@ export default function MyOrdersScreen() {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: Colors.text,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    marginTop: 2,
+  },
   segmentWrap: {
     paddingHorizontal: 16,
     paddingBottom: 10,
@@ -237,6 +261,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
+  footerInfo: {
+    flex: 1,
+  },
   receiver: {
     fontSize: 12,
     fontWeight: '600',
@@ -246,7 +273,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textMuted,
     marginTop: 2,
-    maxWidth: 220,
   },
   total: {
     fontSize: 16,

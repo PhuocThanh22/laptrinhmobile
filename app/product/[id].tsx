@@ -11,7 +11,8 @@ import { Button } from '@/components/Button';
 import { Countdown } from '@/components/Countdown';
 import { ErrorState } from '@/components/ErrorState';
 import { ImageCarousel } from '@/components/ImageCarousel';
-import { Loading } from '@/components/Loading';
+import { ProductVideo } from '@/components/ProductVideo';
+import { DetailSkeleton } from '@/components/Skeleton';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { getCategoryLabel, getConditionLabel } from '@/constants/categories';
@@ -181,7 +182,7 @@ export default function ProductDetailScreen() {
     return (
       <Screen>
         <AppHeader title="Sản phẩm" onBack={() => router.back()} />
-        <Loading />
+        <DetailSkeleton />
       </Screen>
     );
   }
@@ -213,6 +214,7 @@ export default function ProductDetailScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <ImageCarousel images={product.images} />
+        {product.video ? <ProductVideo uri={product.video} /> : null}
 
         <View style={styles.content}>
           {/* Badges */}

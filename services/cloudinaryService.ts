@@ -58,3 +58,40 @@ export async function uploadImages(uris: string[]): Promise<string[]> {
   }
   return urls;
 }
+
+async function uploadVideoOne(uri: string): Promise<string> {
+  if (!isCloudinaryConfigured) {
+    throw new Error(
+      'Chưa cấu hình Cloudinary. Vui lòng điền EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME và EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET trong file .env.',
+    );
+  }
+
+  const { cloudName, uploadPreset } = cloudinaryConfig;
+  const url = `${BASE_URL}/${cloudName}/video/upload`;
+
+  const formData = new FormData();
+  const filename = uri.split('/').pop() ?? 'video.mp4';
+  const extMatch = /\.(\w+)$/.exec(filename);
+  const mime = extMatch ? `video/${extMatch[1].toLowerCase()}` : 'video/mp4';
+
+  if (Platform.OS === 'web') {
+    const blob = await (await fetch(uri)).blob();
+    formData.append('file', blob, filename);
+  } else {
+    formData.append('file', { uri, name: filename, type: mime } as unknown as Blob);
+  }
+  formData.append('upload_preset', uploadPreset);
+
+  const response = await fetch(url, { method: 'POST', body: formData });
+  const json = await response.json();
+
+  if (!response.ok || !json.secure_url) {
+    throw new Error(json?.error?.message ?? 'Upload video lên Cloudinary thất bại.');
+  }
+  return json.secure_url as string;
+}
+
+/** Upload một video, trả về URL. */
+export async function uploadVideo(uri: string): Promise<string> {
+  return uploadVideoOne(uri);
+}

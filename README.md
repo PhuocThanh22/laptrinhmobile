@@ -98,6 +98,10 @@ Minishop/
 ├── types/                      # Kiểu dữ liệu dùng chung
 ├── scripts/
 │   └── seed-firestore.js       # Seed dữ liệu demo (firebase-admin)
+├── server/                     # Backend gửi email xác thực qua Brevo (hướng B)
+│   ├── src/index.js            # Express: POST /send-verification-email
+│   ├── src/emailTemplate.js    # Template email HTML (branded MiniShop)
+│   └── .env.example            # FIREBASE_SERVICE_ACCOUNT_PATH, BREVO_API_KEY, ...
 ├── firestore.rules             # Security Rules
 ├── .env / .env.example         # KEY (XEM MỤC 5)
 ├── eas.json                    # Cấu hình EAS (build/update)
@@ -213,6 +217,29 @@ npx expo start --web
 npm run typecheck   # TypeScript
 npm run lint        # ESLint
 ```
+
+### Server gửi email xác thực (Brevo) — tuỳ chọn
+
+Firebase **khoá cứng** nội dung email xác thực (chống spam) nên không sửa body được qua Console. Để có email đẹp + tránh vào thư rác, app có thể gọi backend `server/` (Express + Firebase Admin + Brevo) để tự gửi:
+
+1. **Chuẩn bị Brevo**: tạo tài khoản [brevo.com](https://www.brevo.com) → **API Keys** lấy key → **Sender** xác thực email người gửi (nên verify domain riêng để không vào spam).
+2. **Tải service account** (Firebase Console → Project settings → Service accounts → Generate new private key) lưu vào `server/serviceAccountKey.json`.
+3. Cấu hình `server/.env` (copy từ `.env.example`): `FIREBASE_SERVICE_ACCOUNT_PATH`, `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME`, `PORT`.
+4. Chạy server:
+
+   ```bash
+   cd server && npm install && npm start    # mặc định cổng 4000
+   ```
+
+5. Trong `.env` của app, đặt URL backend:
+
+   ```env
+   EXPO_PUBLIC_API_URL=http://localhost:4000
+   ```
+
+   > Điện thoại thật (Expo Go) phải dùng IP máy trên cùng WiFi, ví dụ `http://192.168.1.10:4000`.
+
+Khi `EXPO_PUBLIC_API_URL` trống → app **fallback** dùng Firebase gửi email mặc định (không cần server).
 
 ---
 
@@ -359,6 +386,7 @@ npm run eas:build          # chạy eas build (chọn nền tảng)
 
 - [x] Đăng ký / Đăng nhập / Đăng xuất (Firebase Auth + users)
 - [x] Đăng ký gửi **email xác thực** — user phải xác thực email mới vào được app (màn hình `verify-email`, gửi lại email được)
+- [x] Email xác thực **HTML đẹp qua Brevo** (`server/`) — fallback Firebase khi không cấu hình `EXPO_PUBLIC_API_URL`
 - [x] **Quên mật khẩu** — gửi email đặt lại mật khẩu (Firebase Password Reset)
 - [x] Trang chủ: tìm kiếm, danh mục, đấu giá nổi bật, sản phẩm mới
 - [x] Danh sách sản phẩm (lưới), phân loại theo danh mục, lọc hình thức bán

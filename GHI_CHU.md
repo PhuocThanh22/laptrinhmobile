@@ -101,11 +101,21 @@ EAS tự nạp biến `EXPO_PUBLIC_*` từ `.env` — không cần cấu hình t
 - `services/` — Firebase, Cloudinary, đấu giá, đơn hàng...
 - `context/` — AuthContext, CartContext
 - `components/` — ProductCard, AuctionCard, Countdown, ProductForm...
+- `server/` — backend gửi email xác thực qua **Brevo** (Express + Firebase Admin)
 - `firestore.rules` — security rules
 - `scripts/seed-firestore.js` — seed demo
 
+## ✉️ EMAIL XÁC THỰC QUA BREVO (server/)
+Firebase khoá cứng body email xác thực (chống spam) — sửa qua Console không được.
+Để email đẹp + không vào thư rác, dùng server/ gửi mail:
+1. Brevo: tạo account → API Keys → xác thực Sender (nên verify domain riêng).
+2. Tải service account → lưu `server/serviceAccountKey.json`.
+3. Copy `server/.env.example` → `server/.env` (điền BREVO_API_KEY, BREVO_SENDER_EMAIL...).
+4. `cd server && npm install && npm start` (cổng 4000).
+5. App `.env`: `EXPO_PUBLIC_API_URL=http://<IP-máy>:4000` (điện thoại thật dùng IP LAN; để trống → fallback Firebase gửi email mặc định).
+
 ## ✅ ĐÃ HOÀN THÀNH
-Đăng ký (gửi email xác thực) / đăng nhập / đăng xuất · Xác thực email bắt buộc trước khi vào app (màn hình verify-email, gửi lại email được) · Quên mật khẩu (gửi email đặt lại) · Trang chủ (tìm kiếm, danh mục, đấu giá, sản phẩm mới) · Chi tiết sản phẩm · Đăng bán (chọn ảnh → Cloudinary) · Sản phẩm của tôi (sửa/xoá/đã bán) · Giỏ hàng · Checkout COD · Đơn hàng (mua/bán, đổi trạng thái) · Đấu giá đầy đủ · Validation · Loading/Error/Empty · Security Rules · Seed demo.
+Đăng ký (gửi email xác thực, có thể qua Brevo HTML) / đăng nhập / đăng xuất · Xác thực email bắt buộc trước khi vào app (màn hình verify-email, gửi lại email được) · Quên mật khẩu (gửi email đặt lại) · Trang chủ (tìm kiếm, danh mục, đấu giá, sản phẩm mới) · Chi tiết sản phẩm · Đăng bán (chọn ảnh → Cloudinary) · Sản phẩm của tôi (sửa/xoá/đã bán) · Giỏ hàng · Checkout COD · Đơn hàng (mua/bán, đổi trạng thái) · Đấu giá đầy đủ · Validation · Loading/Error/Empty · Security Rules · Seed demo.
 
 ## ⏳ CHƯA LÀM (ngoài phạm vi)
 Thanh toán online thật (chỉ COD) · Chat · Review · Push notification khi có lượt đấu mới.

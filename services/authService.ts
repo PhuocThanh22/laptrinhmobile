@@ -15,7 +15,32 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { requireFirebase } from './firebase';
+import { apiUrl, isApiConfigured } from '@/constants/config';
 import type { AppUser } from '@/types';
+
+/**
+ * Gửi email xác thực. Nếu cấu hình EXPO_PUBLIC_API_URL (server Brevo) thì gọi
+ * backend để gửi email HTML tự thiết kế; ngược lại fallback Firebase gửi trực tiếp.
+ */
+async function dispatchVerificationEmail(email: string, name: string): Promise<void> {
+  if (isApiConfigured) {
+    const resp = await fetch(`${apiUrl}/send-verification-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name }),
+    });
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      throw new Error(data?.error ?? 'Gửi email xác thực thất bại.');
+    }
+    return;
+  }
+
+  // Fallback: Firebase gửi email xác thực mặc định.
+  const { auth } = requireFirebase();
+  const current = auth.currentUser;
+  if (current) await sendEmailVerification(current);
+}
 
 export async function registerUser(input: {
   name: string;
@@ -43,10 +68,11 @@ export async function registerUser(input: {
     createdAt: user.createdAt,
   });
 
-  // Gửi email xác thực ngay sau khi đăng ký. Nếu gửi thất bại vẫn cho phép
-  // đăng ký (người dùng có thể tự gửi lại từ màn hình xác thực email).
+  // Gửi email xác thực ngay sau khi đăng ký (Brevo nếu có server, ngược lại
+  // dùng Firebase). Nếu gửi thất bại vẫn cho phép đăng ký (có thể gửi lại
+  // từ màn hình xác thực email).
   try {
-    await sendEmailVerification(credential.user);
+    await dispatchVerificationEmail(user.email, user.name);
   } catch {
     // bỏ qua lỗi gửi email, không chặn đăng ký
   }
@@ -58,7 +84,10 @@ export async function registerUser(input: {
 export async function sendVerificationEmail(): Promise<void> {
   const { auth } = requireFirebase();
   if (!auth.currentUser) throw new Error('Bạn chưa đăng nhập.');
-  await sendEmailVerification(auth.currentUser);
+  await dispatchVerificationEmail(
+    auth.currentUser.email ?? '',
+    auth.currentUser.displayName ?? '',
+  );
 }
 
 /** Làm mới user trên Firebase Auth và trả về trạng thái emailVerified mới nhất. */
@@ -71,6 +100,20 @@ export async function reloadUserEmailVerified(): Promise<boolean> {
 
 /** Gửi email đặt lại mật khẩu (quên mật khẩu). */
 export async function resetPassword(email: string): Promise<void> {
+  if (isApiConfigured) {
+    const resp = await fetch(`${apiUrl}/send-password-reset-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim() }),
+    });
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      throw new Error(data?.error ?? 'Gửi email đặt lại mật khẩu thất bại.');
+    }
+    return;
+  }
+
+  // Fallback: Firebase gửi email đặt lại mật khẩu mặc định.
   const { auth } = requireFirebase();
   await sendPasswordResetEmail(auth, email.trim());
 }

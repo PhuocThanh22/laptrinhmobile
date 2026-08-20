@@ -16,7 +16,7 @@ import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { APP_NAME } from '@/constants/config';
 import { Colors } from '@/constants/colors';
-import { resetPassword } from '@/services/authService';
+import { resetPassword, checkEmailExists } from '@/services/authService';
 import { getFirebaseErrorMessage } from '@/utils/errors';
 import { validateEmail } from '@/utils/validation';
 
@@ -35,6 +35,11 @@ export default function ForgotPasswordScreen() {
     }
     setLoading(true);
     try {
+      const exists = await checkEmailExists(email);
+      if (!exists) {
+        Toast.show({ type: 'error', text1: 'Email này chưa có tài khoản.' });
+        return;
+      }
       await resetPassword(email);
       Toast.show({
         type: 'success',

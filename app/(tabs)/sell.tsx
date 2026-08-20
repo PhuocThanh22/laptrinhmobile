@@ -4,6 +4,7 @@ import Toast from 'react-native-toast-message';
 
 import { ProductForm } from '@/components/ProductForm';
 import { Screen } from '@/components/Screen';
+import { CartButton } from '@/components/CartButton';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
 import { createProduct } from '@/services/productService';
@@ -29,8 +30,11 @@ export default function SellScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>Đăng bán sản phẩm</Text>
-        <Text style={styles.subtitle}>Chọn giá cố định hoặc tổ chức đấu giá</Text>
+        <View>
+          <Text style={styles.title}>Đăng bán sản phẩm</Text>
+          <Text style={styles.subtitle}>Chọn giá cố định hoặc tổ chức đấu giá</Text>
+        </View>
+        <CartButton size={40} />
       </View>
       <ProductForm submitLabel="Đăng bán" onSubmit={handleSubmit} />
     </Screen>
@@ -39,6 +43,9 @@ export default function SellScreen() {
 
 const styles = StyleSheet.create({
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 4,
