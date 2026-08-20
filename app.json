@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "Minishop",
-    "slug": "Minishop",
+    "name": "MiniShop",
+    "slug": "minishop",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "minishop",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.minishop.app"
     },
     "android": {
+      "package": "com.minishop.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -38,10 +40,22 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MiniShop cần quyền truy cập thư viện ảnh để bạn có thể đăng sản phẩm."
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
+    "extra": {
+      "eas": {
+        "projectId": "THAY-THE-BANG-EAS-PROJECT-ID"
+      }
+    },
     "experiments": {
-      "typedRoutes": true,
+      "typedRoutes": false,
       "reactCompiler": true
     }
   }

@@ -33,6 +33,15 @@ yarn-error.*
 # local env files
 .env*.local
 
+# env vars (chứa key, không đẩy lên git)
+.env
+.env.*
+!.env.example
+
+# firebase service account (BÍ MẬT - tuyệt đối không đẩy lên git)
+scripts/serviceAccountKey.json
+scripts/serviceAccountKey*.json
+
 # typescript
 *.tsbuildinfo
 

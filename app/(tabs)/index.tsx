@@ -1,98 +1,211 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { AuctionCard } from '@/components/AuctionCard';
+import { Avatar } from '@/components/Avatar';
+import { CategoryChip } from '@/components/CategoryChip';
+import { Loading } from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
+import { ProductCard } from '@/components/ProductCard';
+import { Screen } from '@/components/Screen';
+import { SearchBar } from '@/components/SearchBar';
+import { SectionHeader } from '@/components/SectionHeader';
+import { CATEGORIES } from '@/constants/categories';
+import { APP_NAME } from '@/constants/config';
+import { Colors } from '@/constants/colors';
+import { useAuth } from '@/context/AuthContext';
+import { getAllProducts } from '@/services/productService';
+import { endExpiredAuctions } from '@/services/auctionService';
+import { getErrorMessage } from '@/utils/errors';
+import type { Product } from '@/types';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { user } = useAuth();
+  const { width } = useWindowDimensions();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const load = useCallback(async () => {
+    try {
+      await endExpiredAuctions();
+      const list = await getAllProducts();
+      setProducts(list);
+      setError(null);
+    } catch (e) {
+      setError(getErrorMessage(e));
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const cardWidth = (width - 32 - 12) / 2;
+
+  const auctions = products.filter(
+    (p) => p.saleType === 'auction' && (p.status === 'auction_active' || p.status === 'auction_ended'),
+  );
+  const newProducts = products.filter((p) => p.status === 'active' || p.status === 'auction_active');
+
+  return (
+    <Screen>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.brand}>{APP_NAME}</Text>
+          <Text style={styles.tagline}>Sàn đồ cũ sinh viên · Đấu giá nhẹ</Text>
+        </View>
+        <Pressable onPress={() => router.push('/(tabs)/profile')} style={styles.avatarBtn}>
+          <Avatar name={user?.name} uri={user?.avatar} size={40} />
+        </Pressable>
+      </View>
+
+      {loading ? (
+        <Loading text="Đang tải sản phẩm..." />
+      ) : error ? (
+        <ErrorState message={error} onRetry={load} />
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />
+          }>
+          {/* Search */}
+          <View style={styles.searchWrap}>
+            <SearchBar onSubmit={(text) => router.push({ pathname: '/product/search', params: { q: text } })} />
+          </View>
+
+          {/* Categories */}
+          <SectionHeader title="Danh mục" />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categories}>
+            {CATEGORIES.map((item) => (
+              <CategoryChip
+                key={item.key}
+                label={item.label}
+                icon={item.icon}
+                onPress={() => router.push({ pathname: '/product/search', params: { category: item.key } })}
+              />
+            ))}
+          </ScrollView>
+
+          {/* Auctions */}
+          <SectionHeader title="Đang đấu giá" right="Xem thêm" onRightPress={() => router.push('/product/search')} />
+          {auctions.length ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.auctionsRow}>
+              {auctions.map((item) => (
+                <AuctionCard
+                  key={item.id}
+                  product={item}
+                  width={width - 64}
+                  onPress={() => router.push(`/product/${item.id}`)}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <Text style={styles.noData}>Chưa có phiên đấu giá nào.</Text>
+          )}
+
+          {/* New products */}
+          <SectionHeader title="Sản phẩm mới" />
+          {newProducts.length ? (
+            <View style={styles.grid}>
+              {newProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  width={cardWidth}
+                  onPress={() => router.push(`/product/${product.id}`)}
+                />
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyWrap}>
+              <MaterialIcons name="storefront" size={48} color={Colors.textMuted} />
+              <Text style={styles.noData}>Chưa có sản phẩm. Hãy là người đầu tiên đăng bán!</Text>
+            </View>
+          )}
+          <View style={styles.bottomSpace} />
+        </ScrollView>
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  brand: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: Colors.text,
+  },
+  tagline: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    marginTop: 1,
+  },
+  avatarBtn: {
+    borderRadius: 20,
+  },
+  searchWrap: {
+    paddingHorizontal: 16,
+  },
+  categories: {
+    paddingHorizontal: 16,
+    gap: 10,
+    paddingVertical: 4,
+  },
+  auctionsRow: {
+    paddingHorizontal: 16,
+    gap: 12,
+    paddingVertical: 4,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    paddingHorizontal: 16,
+  },
+  noData: {
+    paddingHorizontal: 16,
+    color: Colors.textMuted,
+    fontSize: 13,
+    textAlign: 'center',
+    paddingVertical: 16,
+  },
+  emptyWrap: {
+    alignItems: 'center',
+    padding: 24,
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  bottomSpace: {
+    height: 24,
   },
 });

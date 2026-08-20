@@ -1,0 +1,233 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // Hàm tiện ích
+    // ============================================================
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function isValidList(list) {
+      return list is list;
+    }
+
+    // ============================================================
+    // users — hồ sơ người dùng
+    // ============================================================
+    match /users/{userId} {
+      // Đọc: ai đã đăng nhập cũng xem được (cần hiển thị tên người bán).
+      allow read: if signedIn();
+
+      // Tạo: chỉ chủ tài khoản tạo hồ sơ của mình.
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['name', 'email', 'phone', 'avatar', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 0;
+
+      // Sửa: chỉ sửa các trường cá nhân của mình, KHÔNG đổi email/createdAt.
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'avatar'])
+        && (!('name' in request.resource.data) || request.resource.data.name.size() > 0);
+
+      // Không cho xoá tài khoản.
+      allow delete: if false;
+    }
+
+    // ============================================================
+    // products — sản phẩm (giá cố định + đấu giá)
+    // ============================================================
+    match /products/{productId} {
+      allow read: if signedIn();
+
+      // ---- Tạo sản phẩm ----
+      allow create: if signedIn()
+        && request.resource.data.sellerId == request.auth.uid
+        && request.resource.data.saleType in ['fixed', 'auction']
+        && request.resource.data.status in ['active', 'auction_active']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.description is string
+        && request.resource.data.description.size() > 0
+        && request.resource.data.category is string
+        && request.resource.data.category.size() > 0
+        && request.resource.data.condition is string
+        && request.resource.data.condition.size() > 0
+        && isValidList(request.resource.data.images)
+        && request.resource.data.images.size() >= 1
+        && request.resource.data.createdAt >= request.time.toMillis() - 60000
+        && request.resource.data.createdAt <= request.time.toMillis() + 60000
+        && (
+          request.resource.data.saleType == 'fixed'
+            ? (request.resource.data.price is number && request.resource.data.price > 0)
+            : (request.resource.data.startingPrice is number && request.resource.data.startingPrice > 0
+               && request.resource.data.currentPrice is number
+               && request.resource.data.currentPrice >= request.resource.data.startingPrice
+               && request.resource.data.bidIncrement is number && request.resource.data.bidIncrement > 0
+               && request.resource.data.endTime is number
+               && request.resource.data.endTime > request.time.toMillis())
+        );
+
+      // ---- Cập nhật sản phẩm ----
+      // Các nhánh được phép:
+      //  (A) Người bán sửa thông tin sản phẩm của mình.
+      //  (B) Người bán đánh dấu đã bán / kết thúc đấu giá của mình.
+      //  (C) Người đặt giá cập nhật currentPrice/bidsCount (transaction placeBid).
+      //  (D) Người mua đánh dấu sold khi đặt hàng (transaction createOrder —
+      //      đã kiểm tra trong transaction nên chỉ người tạo được đơn mới ghi được).
+      //  (E) Bất kỳ ai kết thúc phiên đấu giá đã hết thời gian.
+      allow update: if signedIn() && (
+        // (A) Người bán sửa thông tin
+        (resource.data.sellerId == request.auth.uid
+          && request.resource.data.sellerId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'description', 'category', 'condition', 'images',
+            'saleType', 'price', 'startingPrice', 'bidIncrement', 'endTime',
+          ])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.saleType in ['fixed', 'auction']
+          && isValidList(request.resource.data.images)
+          && request.resource.data.images.size() >= 1)
+        ||
+        // (B) Người bán đánh dấu đã bán / kết thúc đấu giá của mình
+        (resource.data.sellerId == request.auth.uid
+          && (
+            (resource.data.saleType == 'fixed'
+              && resource.data.status == 'active'
+              && request.resource.data.status == 'sold'
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+            ||
+            (resource.data.saleType == 'auction'
+              && resource.data.status == 'auction_active'
+              && request.resource.data.status == 'auction_ended'
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'winnerId', 'currentPrice']))
+          ))
+        ||
+        // (C) Người đặt giá cập nhật giá hiện tại + số lượt đấu
+        (resource.data.sellerId != request.auth.uid
+          && request.resource.data.sellerId == resource.data.sellerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentPrice', 'bidsCount'])
+          && request.resource.data.currentPrice > resource.data.currentPrice
+          && request.resource.data.bidsCount >= resource.data.bidsCount)
+        ||
+        // (D) Người mua đánh dấu sold khi tạo đơn (giá cố định hoặc đấu giá đã kết thúc)
+        (resource.data.sellerId != request.auth.uid
+          && request.resource.data.sellerId == resource.data.sellerId
+          && request.resource.data.status == 'sold'
+          && resource.data.status in ['active', 'auction_ended']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+        ||
+        // (E) Kết thúc phiên đấu giá đã hết hạn (chủ lẫn khách)
+        (resource.data.saleType == 'auction'
+          && resource.data.status == 'auction_active'
+          && resource.data.endTime <= request.time.toMillis()
+          && request.resource.data.sellerId == resource.data.sellerId
+          && request.resource.data.status == 'auction_ended'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'winnerId', 'currentPrice']))
+      );
+
+      // Xoá: chỉ người bán của sản phẩm (sản phẩm có lượt đấu/đơn đang treo
+      // đã bị ngăn ở tầng app; xoá được là quyết định của chủ hàng).
+      allow delete: if signedIn() && resource.data.sellerId == request.auth.uid;
+    }
+
+    // ============================================================
+    // bids — lượt đấu giá (bất biến)
+    // ============================================================
+    match /bids/{bidId} {
+      allow read: if signedIn();
+
+      // Đặt giá: đăng nhập, không phải chủ sản phẩm, đúng cấu trúc,
+      // trong thời gian đấu, sản phẩm còn nhận đấu giá,
+      // giá >= giá hiện tại + bước giá.
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['productId', 'bidderId', 'amount', 'createdAt'])
+        && request.resource.data.bidderId == request.auth.uid
+        && request.resource.data.productId is string
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.createdAt >= request.time.toMillis() - 60000
+        && request.resource.data.createdAt <= request.time.toMillis() + 60000
+        && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.status == 'auction_active'
+        && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.sellerId != request.auth.uid
+        && get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.endTime > request.time.toMillis()
+        && request.resource.data.amount
+            >= get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.currentPrice
+             + get(/databases/$(database)/documents/products/$(request.resource.data.productId)).data.bidIncrement;
+
+      // Lịch sử đấu giá bất biến: không được sửa/xoá.
+      allow update, delete: if false;
+    }
+
+    // ============================================================
+    // carts — giỏ hàng (chỉ chủ sở hữu)
+    // ============================================================
+    match /carts/{userId} {
+      allow read, create: if isOwner(userId)
+        && request.resource.data.userId == request.auth.uid
+        && isValidList(request.resource.data.items)
+        && request.resource.data.items.size() >= 0
+        && request.resource.data.updatedAt >= request.time.toMillis() - 60000
+        && request.resource.data.updatedAt <= request.time.toMillis() + 60000;
+
+      // Cập nhật: chỉ đổi items + updatedAt, không đổi userId.
+      allow update: if isOwner(userId)
+        && request.resource.data.userId == resource.data.userId
+        && isValidList(request.resource.data.items)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['items', 'updatedAt']);
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ============================================================
+    // orders — đơn hàng
+    // ============================================================
+    match /orders/{orderId} {
+      // Đọc: người mua (buyerId) hoặc người bán (có trong sellerIds).
+      allow read: if signedIn()
+        && (resource.data.buyerId == request.auth.uid
+          || request.auth.uid in resource.data.sellerIds);
+
+      // Tạo đơn: người mua tạo cho chính mình, dữ liệu hợp lệ, COD.
+      // Lưu ý: các điều kiện "sản phẩm còn bán / đúng người thắng đấu giá"
+      // được kiểm tra + đánh dấu 'sold' trong transaction ở tầng app
+      // (services/orderService), không thể duyệt từng item trong rules.
+      allow create: if signedIn()
+        && request.resource.data.buyerId == request.auth.uid
+        && isValidList(request.resource.data.items)
+        && request.resource.data.items.size() > 0
+        && isValidList(request.resource.data.sellerIds)
+        && request.resource.data.status == 'pending'
+        && request.resource.data.paymentMethod == 'cod'
+        && request.resource.data.totalAmount is number
+        && request.resource.data.totalAmount >= 0
+        && request.resource.data.receiverName is string
+        && request.resource.data.receiverName.size() > 0
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() > 0
+        && request.resource.data.address is string
+        && request.resource.data.address.size() > 0
+        && request.resource.data.createdAt >= request.time.toMillis() - 60000
+        && request.resource.data.createdAt <= request.time.toMillis() + 60000;
+
+      // Cập nhật: chỉ người bán, và CHỈ đổi trạng thái (không đổi thông tin khác).
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.sellerIds
+        && request.resource.data.buyerId == resource.data.buyerId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['pending', 'confirmed', 'shipping', 'completed', 'cancelled'];
+
+      // Không cho xoá đơn hàng.
+      allow delete: if false;
+    }
+  }
+}
