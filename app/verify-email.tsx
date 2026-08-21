@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { LogOut, Mail, RotateCw, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -54,7 +54,7 @@ export default function VerifyEmailScreen() {
     <Screen>
       <View style={styles.content}>
         <View style={styles.logoWrap}>
-          <MaterialIcons name="mark-email-unread" size={34} color={Colors.white} />
+          <Mail size={34} color={Colors.white} />
         </View>
         <Text style={styles.appName}>{APP_NAME}</Text>
         <Text style={styles.title}>Xác thực email của bạn</Text>
@@ -70,7 +70,7 @@ export default function VerifyEmailScreen() {
             title={sending ? 'Đang gửi...' : 'Gửi lại email xác thực'}
             onPress={handleResend}
             loading={sending}
-            icon="refresh"
+            icon={RotateCw}
             style={styles.button}
           />
           <Button
@@ -78,13 +78,13 @@ export default function VerifyEmailScreen() {
             onPress={handleCheck}
             loading={checking}
             variant="success"
-            icon="verified-user"
+            icon={ShieldCheck}
             style={styles.button}
           />
         </View>
 
         <View style={styles.footer}>
-          <Button title="Đăng xuất" onPress={handleLogout} variant="ghost" icon="logout" small />
+          <Button title="Đăng xuất" onPress={handleLogout} variant="ghost" icon={LogOut} small />
         </View>
       </View>
     </Screen>

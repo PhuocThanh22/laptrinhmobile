@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { CircleCheck, CircleStop, Package, SquarePen, Timer, Trash2 } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -23,6 +23,7 @@ import { formatCurrency } from '@/utils/format';
 import { isAuctionActive } from '@/utils/auction';
 import type { Product } from '@/types';
 
+import { safeBack } from '@/utils/navigation';
 function statusBadge(p: Product) {
   switch (p.status) {
     case 'active':
@@ -92,7 +93,7 @@ export default function MyProductsScreen() {
 
   return (
     <Screen>
-      <AppHeader title="Sản phẩm của tôi" onBack={() => router.back()} />
+      <AppHeader title="Sản phẩm của tôi" onBack={safeBack} />
 
       {loading ? (
         <ListRowSkeleton rows={4} imageSize={92} />
@@ -103,7 +104,7 @@ export default function MyProductsScreen() {
           contentContainerStyle={styles.content}
           ListEmptyComponent={
             <EmptyState
-              icon="inventory-2"
+              icon={Package}
               title="Chưa có sản phẩm nào"
               message="Hãy đăng bán sản phẩm đầu tiên của bạn."
               actionLabel="Đăng bán"
@@ -143,7 +144,7 @@ export default function MyProductsScreen() {
                       <Text style={styles.auctionMetaText}>{item.bidsCount ?? 0} lượt đấu</Text>
                       {active && item.endTime ? (
                         <View style={styles.timeRow}>
-                          <MaterialIcons name="timer" size={12} color={Colors.accent} />
+                          <Timer size={12} color={Colors.accent} />
                           <Countdown endTime={item.endTime} compact />
                         </View>
                       ) : null}
@@ -160,7 +161,7 @@ export default function MyProductsScreen() {
                       title="Sửa"
                       variant="outline"
                       small
-                      icon="edit"
+                      icon={SquarePen}
                       onPress={() => router.push(`/product/edit/${item.id}`)}
                       style={styles.actionBtn}
                     />
@@ -169,7 +170,7 @@ export default function MyProductsScreen() {
                         title="Đã bán"
                         variant="success"
                         small
-                        icon="check-circle"
+                        icon={CircleCheck}
                         onPress={() =>
                           confirmAction('Đánh dấu đã bán', 'Xác nhận sản phẩm này đã bán?', () =>
                             markProductAsSold(item.id),
@@ -183,7 +184,7 @@ export default function MyProductsScreen() {
                         title="Kết thúc"
                         variant="success"
                         small
-                        icon="stop-circle"
+                        icon={CircleStop}
                         onPress={() =>
                           confirmAction('Kết thúc đấu giá', 'Kết thúc phiên đấu giá ngay?', () =>
                             endAuction(item.id),
@@ -196,7 +197,7 @@ export default function MyProductsScreen() {
                       title="Xoá"
                       variant="danger"
                       small
-                      icon="delete"
+                      icon={Trash2}
                       onPress={() =>
                         confirmAction('Xoá sản phẩm', 'Bạn chắc chắn muốn xoá?', () =>
                           deleteProduct(item.id),

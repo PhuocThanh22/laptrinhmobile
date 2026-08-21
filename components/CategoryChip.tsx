@@ -1,20 +1,20 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import type { LucideIcon } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/constants/colors';
 
 interface CategoryChipProps {
   label: string;
-  icon: string;
+  icon: LucideIcon;
   active?: boolean;
   onPress?: () => void;
 }
 
-export function CategoryChip({ label, icon, active, onPress }: CategoryChipProps) {
+export function CategoryChip({ label, icon: Icon, active, onPress }: CategoryChipProps) {
   return (
     <Pressable onPress={onPress} style={styles.wrap}>
       <View style={[styles.iconWrap, active && styles.iconWrapActive]}>
-        <MaterialIcons name={icon as keyof typeof MaterialIcons.glyphMap} size={22} color={active ? Colors.primary : Colors.text} />
+        <Icon size={22} color={active ? Colors.primary : Colors.text} />
       </View>
       <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
     </Pressable>

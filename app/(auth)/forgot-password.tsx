@@ -1,8 +1,9 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { ChevronLeft, KeyRound, Mail } from 'lucide-react-native';
 import { Link, router } from 'expo-router';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -62,10 +63,12 @@ export default function ForgotPasswordScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <Link href="/(auth)/login" style={styles.backBtn} asChild>
-              <MaterialIcons name="arrow-back-ios" size={20} color={Colors.text} />
+              <Pressable hitSlop={12}>
+                <ChevronLeft size={20} color={Colors.text} />
+              </Pressable>
             </Link>
             <View style={styles.logoWrap}>
-              <MaterialIcons name="lock-reset" size={30} color={Colors.white} />
+              <KeyRound size={30} color={Colors.white} />
             </View>
           </View>
           <Text style={styles.appName}>{APP_NAME}</Text>
@@ -87,7 +90,7 @@ export default function ForgotPasswordScreen() {
               title={loading ? 'Đang gửi...' : 'Gửi email đặt lại mật khẩu'}
               onPress={handleReset}
               loading={loading}
-              icon="mail-outline"
+              icon={Mail}
               style={styles.button}
             />
           </View>

@@ -1,22 +1,22 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Inbox, type LucideIcon } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/constants/colors';
 import { Button } from './Button';
 
 interface EmptyStateProps {
-  icon?: keyof typeof MaterialIcons.glyphMap;
+  icon?: LucideIcon;
   title: string;
   message?: string;
   actionLabel?: string;
   onAction?: () => void;
 }
 
-export function EmptyState({ icon = 'inbox', title, message, actionLabel, onAction }: EmptyStateProps) {
+export function EmptyState({ icon: Icon = Inbox, title, message, actionLabel, onAction }: EmptyStateProps) {
   return (
     <View style={styles.container}>
       <View style={styles.iconWrap}>
-        <MaterialIcons name={icon} size={40} color={Colors.textMuted} />
+        <Icon size={40} color={Colors.textMuted} />
       </View>
       <Text style={styles.title}>{title}</Text>
       {message ? <Text style={styles.message}>{message}</Text> : null}

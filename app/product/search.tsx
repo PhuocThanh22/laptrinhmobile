@@ -1,3 +1,4 @@
+import { SearchX } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -24,6 +25,7 @@ import { getAllProducts } from '@/services/productService';
 import { getErrorMessage } from '@/utils/errors';
 import type { Product, SaleType } from '@/types';
 
+import { safeBack } from '@/utils/navigation';
 type FilterKey = 'all' | SaleType;
 
 const SALE_FILTERS: { key: FilterKey; label: string }[] = [
@@ -76,7 +78,7 @@ export default function SearchScreen() {
 
   return (
     <Screen>
-      <AppHeader title="Tìm kiếm" onBack={() => router.back()} />
+      <AppHeader title="Tìm kiếm" onBack={safeBack} />
       <View style={styles.searchWrap}>
         <SearchBar value={query} onChangeText={setQuery} />
       </View>
@@ -136,7 +138,7 @@ export default function SearchScreen() {
           }
           ListEmptyComponent={
             <EmptyState
-              icon="search-off"
+              icon={SearchX}
               title="Không tìm thấy sản phẩm"
               message="Thử từ khoá hoặc danh mục khác nhé."
             />

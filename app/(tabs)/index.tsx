@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Store } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -147,7 +147,7 @@ export default function HomeScreen() {
             </View>
           ) : (
             <View style={styles.emptyWrap}>
-              <MaterialIcons name="storefront" size={48} color={Colors.textMuted} />
+              <Store size={48} color={Colors.textMuted} />
               <Text style={styles.noData}>Chưa có sản phẩm. Hãy là người đầu tiên đăng bán!</Text>
             </View>
           )}

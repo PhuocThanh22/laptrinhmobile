@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Search, X } from 'lucide-react-native';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useState } from 'react';
 
@@ -25,7 +25,7 @@ export function SearchBar({ value, onChangeText, onSubmit, placeholder = 'Tìm k
 
   return (
     <View style={styles.container}>
-      <MaterialIcons name="search" size={20} color={Colors.textMuted} />
+      <Search size={20} color={Colors.textMuted} />
       <TextInput
         value={current}
         onChangeText={controlled ? onChangeText : handleChange}
@@ -44,7 +44,7 @@ export function SearchBar({ value, onChangeText, onSubmit, placeholder = 'Tìm k
             onSubmit?.('');
           }}
           hitSlop={8}>
-          <MaterialIcons name="close" size={18} color={Colors.textMuted} />
+          <X size={18} color={Colors.textMuted} />
         </Pressable>
       ) : null}
     </View>

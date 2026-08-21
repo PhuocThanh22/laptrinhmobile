@@ -46,5 +46,12 @@ export const isCloudinaryConfigured = Boolean(
   cloudinaryConfig.cloudName && cloudinaryConfig.uploadPreset,
 );
 
+export const vietQRConfig = {
+  bankId: process.env.EXPO_PUBLIC_VIETQR_BANK_ID ?? 'MB',
+  accountNo: process.env.EXPO_PUBLIC_VIETQR_ACCOUNT_NO ?? '0123456789',
+  accountName: process.env.EXPO_PUBLIC_VIETQR_ACCOUNT_NAME ?? 'MINISHOP',
+  template: process.env.EXPO_PUBLIC_VIETQR_TEMPLATE ?? 'compact2',
+};
+
 export const CONFIG_MISSING_MESSAGE =
   'Chưa cấu hình Firebase/Cloudinary. Vui lòng điền thông tin trong file .env (xem .env.example) rồi khởi động lại Expo.';

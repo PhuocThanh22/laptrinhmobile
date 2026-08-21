@@ -1,5 +1,5 @@
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Calendar, ChevronRight } from 'lucide-react-native';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useState } from 'react';
 
@@ -65,9 +65,9 @@ export function DateTimeField({ label, value, onChange, minimumDate }: DateTimeF
     <View style={styles.wrap}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <Pressable onPress={open} style={styles.field}>
-        <MaterialIcons name="event" size={18} color={Colors.textMuted} />
+        <Calendar size={18} color={Colors.textMuted} />
         <Text style={styles.value}>{formatDateTime(value.getTime())}</Text>
-        <MaterialIcons name="chevron-right" size={18} color={Colors.textMuted} />
+        <ChevronRight size={18} color={Colors.textMuted} />
       </Pressable>
 
       {show ? (

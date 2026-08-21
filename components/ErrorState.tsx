@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { CircleAlert } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/constants/colors';
@@ -13,7 +13,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <View style={styles.container}>
       <View style={styles.iconWrap}>
-        <MaterialIcons name="error-outline" size={40} color={Colors.danger} />
+        <CircleAlert size={40} color={Colors.danger} />
       </View>
       <Text style={styles.title}>Đã có lỗi xảy ra</Text>
       {message ? <Text style={styles.message}>{message}</Text> : null}

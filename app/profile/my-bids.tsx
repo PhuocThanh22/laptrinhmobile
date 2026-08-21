@@ -1,3 +1,4 @@
+import { Gavel } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ import { formatCurrency, formatDateTime } from '@/utils/format';
 import { isAuctionActive } from '@/utils/auction';
 import type { Bid, Product } from '@/types';
 
+import { safeBack } from '@/utils/navigation';
 interface BidEntry {
   bid: Bid;
   product: Product;
@@ -62,7 +64,7 @@ export default function MyBidsScreen() {
 
   return (
     <Screen>
-      <AppHeader title="Phiếu đấu giá của tôi" onBack={() => router.back()} />
+      <AppHeader title="Phiếu đấu giá của tôi" onBack={safeBack} />
 
       {loading ? (
         <ListRowSkeleton rows={3} />
@@ -73,7 +75,7 @@ export default function MyBidsScreen() {
           contentContainerStyle={styles.content}
           ListEmptyComponent={
             <EmptyState
-              icon="gavel"
+              icon={Gavel}
               title="Chưa tham gia đấu giá nào"
               message="Hãy tham gia đấu giá những sản phẩm bạn quan tâm."
             />

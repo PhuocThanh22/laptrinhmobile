@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Timer } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -67,7 +67,7 @@ export function ProductCard({ product, width, onPress, style }: ProductCardProps
         </Text>
         {isAuction && active && product.endTime ? (
           <View style={styles.timeRow}>
-            <MaterialIcons name="timer" size={13} color={Colors.accent} />
+            <Timer size={13} color={Colors.accent} />
             <Countdown endTime={product.endTime} compact />
           </View>
         ) : null}

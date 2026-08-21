@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
 
@@ -12,6 +12,7 @@ import { getProductById, updateProduct } from '@/services/productService';
 import { getErrorMessage } from '@/utils/errors';
 import type { Product } from '@/types';
 
+import { safeBack } from '@/utils/navigation';
 export default function EditProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -41,7 +42,7 @@ export default function EditProductScreen() {
   if (loading) {
     return (
       <Screen>
-        <AppHeader title="Chỉnh sửa sản phẩm" onBack={() => router.back()} />
+        <AppHeader title="Chỉnh sửa sản phẩm" onBack={safeBack} />
         <Loading />
       </Screen>
     );
@@ -50,7 +51,7 @@ export default function EditProductScreen() {
   if (error || !product) {
     return (
       <Screen>
-        <AppHeader title="Chỉnh sửa sản phẩm" onBack={() => router.back()} />
+        <AppHeader title="Chỉnh sửa sản phẩm" onBack={safeBack} />
         <ErrorState message={error ?? 'Không tìm thấy sản phẩm.'} onRetry={load} />
       </Screen>
     );
@@ -59,7 +60,7 @@ export default function EditProductScreen() {
   if (user?.uid !== product.sellerId) {
     return (
       <Screen>
-        <AppHeader title="Chỉnh sửa sản phẩm" onBack={() => router.back()} />
+        <AppHeader title="Chỉnh sửa sản phẩm" onBack={safeBack} />
         <ErrorState message="Bạn không có quyền chỉnh sửa sản phẩm này." />
       </Screen>
     );
@@ -83,7 +84,7 @@ export default function EditProductScreen() {
     try {
       await updateProduct(product.id, input);
       Toast.show({ type: 'success', text1: 'Đã cập nhật sản phẩm.' });
-      router.back();
+      safeBack();
     } catch (e) {
       throw new Error(getErrorMessage(e));
     }
@@ -91,7 +92,7 @@ export default function EditProductScreen() {
 
   return (
     <Screen>
-      <AppHeader title="Chỉnh sửa sản phẩm" onBack={() => router.back()} />
+      <AppHeader title="Chỉnh sửa sản phẩm" onBack={safeBack} />
       <ProductForm initial={initial} submitLabel="Lưu thay đổi" onSubmit={handleSubmit} />
     </Screen>
   );

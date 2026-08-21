@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import type { LucideIcon } from 'lucide-react-native';
 import {
   ActivityIndicator,
   Pressable,
@@ -18,7 +18,7 @@ interface ButtonProps {
   variant?: Variant;
   loading?: boolean;
   disabled?: boolean;
-  icon?: keyof typeof MaterialIcons.glyphMap;
+  icon?: LucideIcon;
   style?: StyleProp<ViewStyle>;
   small?: boolean;
 }
@@ -46,6 +46,7 @@ export function Button({
   const isGhost = variant === 'ghost';
   const textColor =
     isOutline || isGhost ? (isGhost ? Colors.textMuted : Colors.primary) : Colors.white;
+  const Icon = icon;
 
   return (
     <Pressable
@@ -64,8 +65,8 @@ export function Button({
         <ActivityIndicator color={textColor} size="small" />
       ) : (
         <>
-          {icon ? (
-            <MaterialIcons name={icon} size={18} color={textColor} style={styles.icon} />
+          {Icon ? (
+            <Icon size={18} color={textColor} style={styles.icon} />
           ) : null}
           <Text style={[styles.title, { color: textColor }, small && styles.smallTitle]}>{title}</Text>
         </>

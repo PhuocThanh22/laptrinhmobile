@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { CreditCard, ShoppingCart, Trash2 } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -14,18 +14,19 @@ import { DEFAULT_PRODUCT_IMAGE } from '@/constants/config';
 import { useCart } from '@/context/CartContext';
 import { formatCurrency } from '@/utils/format';
 
+import { safeBack } from '@/utils/navigation';
 export default function CartScreen() {
   const { items, loading, totalAmount, totalItems, changeQuantity, removeItem } = useCart();
 
   return (
     <Screen>
-      <AppHeader title="Giỏ hàng" subtitle={`${totalItems} sản phẩm`} onBack={() => router.back()} />
+      <AppHeader title="Giỏ hàng" subtitle={`${totalItems} sản phẩm`} onBack={safeBack} />
 
       {loading ? (
         <ListRowSkeleton rows={3} />
       ) : items.length === 0 ? (
         <EmptyState
-          icon="shopping-cart"
+          icon={ShoppingCart}
           title="Giỏ hàng trống"
           message="Hãy thêm sản phẩm giá cố định vào giỏ để đặt hàng. Sản phẩm đấu giá chỉ được đặt hàng khi bạn thắng cuộc."
           actionLabel="Xem sản phẩm"
@@ -60,7 +61,7 @@ export default function CartScreen() {
                       onChange={(q) => changeQuantity(item.productId, q)}
                     />
                     <Pressable onPress={() => removeItem(item.productId)} hitSlop={8}>
-                      <MaterialIcons name="delete-outline" size={22} color={Colors.danger} />
+                      <Trash2 size={22} color={Colors.danger} />
                     </Pressable>
                   </View>
                 </View>
@@ -75,7 +76,7 @@ export default function CartScreen() {
               </View>
               <Button
                 title="Thanh toán"
-                icon="payment"
+                icon={CreditCard}
                 disabled={items.length === 0}
                 onPress={() => router.push('/orders/checkout?mode=cart')}
               />

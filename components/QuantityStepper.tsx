@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Minus, Plus } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/constants/colors';
@@ -17,11 +17,11 @@ export function QuantityStepper({ value, onChange, min = 1, max = 99 }: Quantity
   return (
     <View style={styles.container}>
       <Pressable onPress={dec} style={styles.btn} hitSlop={6}>
-        <MaterialIcons name="remove" size={18} color={Colors.text} />
+        <Minus size={18} color={Colors.text} />
       </Pressable>
       <Text style={styles.value}>{value}</Text>
       <Pressable onPress={inc} style={styles.btn} hitSlop={6}>
-        <MaterialIcons name="add" size={18} color={Colors.text} />
+        <Plus size={18} color={Colors.text} />
       </Pressable>
     </View>
   );

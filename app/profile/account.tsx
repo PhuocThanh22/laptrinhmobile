@@ -1,6 +1,5 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Camera, Mail, Save } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
@@ -16,6 +15,7 @@ import { uploadImages } from '@/services/cloudinaryService';
 import { getErrorMessage } from '@/utils/errors';
 import { formatDate } from '@/utils/format';
 
+import { safeBack } from '@/utils/navigation';
 export default function AccountScreen() {
   const { user, updateProfile } = useAuth();
   const [name, setName] = useState(user?.name ?? '');
@@ -60,7 +60,7 @@ export default function AccountScreen() {
     try {
       await updateProfile({ name: name.trim(), phone: phone.trim() });
       Toast.show({ type: 'success', text1: 'Đã lưu thông tin.' });
-      router.back();
+      safeBack();
     } catch (e) {
       Toast.show({ type: 'error', text1: getErrorMessage(e) });
     } finally {
@@ -70,7 +70,7 @@ export default function AccountScreen() {
 
   return (
     <Screen>
-      <AppHeader title="Thông tin tài khoản" onBack={() => router.back()} />
+      <AppHeader title="Thông tin tài khoản" onBack={safeBack} />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -82,7 +82,7 @@ export default function AccountScreen() {
               title={uploadingAvatar ? 'Đang tải...' : 'Đổi ảnh đại diện'}
               variant="outline"
               small
-              icon="photo-camera"
+              icon={Camera}
               loading={uploadingAvatar}
               onPress={pickAvatar}
               style={styles.avatarBtn}
@@ -102,7 +102,7 @@ export default function AccountScreen() {
             <View style={styles.readonlyWrap}>
               <Text style={styles.readonlyLabel}>Email</Text>
               <View style={styles.readonlyValue}>
-                <MaterialIcons name="mail-outline" size={16} color={Colors.textMuted} />
+                <Mail size={16} color={Colors.textMuted} />
                 <Text style={styles.readonlyText}>{user?.email}</Text>
               </View>
             </View>
@@ -113,7 +113,7 @@ export default function AccountScreen() {
 
           <Button
             title={saving ? 'Đang lưu...' : 'Lưu thông tin'}
-            icon="save"
+            icon={Save}
             loading={saving}
             onPress={handleSave}
           />

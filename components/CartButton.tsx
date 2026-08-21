@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { ShoppingCart } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -13,7 +13,7 @@ export function CartButton({ size = 40 }: { size?: number }) {
       onPress={() => router.push('/cart')}
       hitSlop={8}
       style={[styles.btn, { width: size, height: size, borderRadius: size / 2 }]}>
-      <MaterialIcons name="shopping-cart" size={size * 0.5} color={Colors.text} />
+      <ShoppingCart size={size * 0.5} color={Colors.text} />
       {totalItems > 0 ? (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{totalItems > 99 ? '99+' : totalItems}</Text>

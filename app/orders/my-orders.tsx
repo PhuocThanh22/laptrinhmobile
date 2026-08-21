@@ -1,3 +1,4 @@
+import { MessageCircle, ReceiptText } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -15,9 +16,25 @@ import { ORDER_STATUS_LABELS } from '@/constants/categories';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
 import { getMyOrders, getOrdersBySeller, updateOrderStatus } from '@/services/orderService';
+import { getOrCreateConversation } from '@/services/chatService';
+import { getReviewsForOrders } from '@/services/reviewService';
 import { formatCurrency, formatDateTime } from '@/utils/format';
 import { getErrorMessage } from '@/utils/errors';
-import type { Order, OrderStatus } from '@/types';
+import type { Order, OrderStatus, PaymentStatus, Review } from '@/types';
+
+import { safeBack } from '@/utils/navigation';
+const PAYMENT_LABELS: Record<PaymentStatus, string> = {
+  pending: 'Chờ thanh toán',
+  paid: 'Đã thanh toán',
+  failed: 'Thất bại',
+  expired: 'Hết hạn',
+};
+const PAYMENT_COLORS: Record<PaymentStatus, string> = {
+  pending: Colors.accent,
+  paid: Colors.success,
+  failed: Colors.danger,
+  expired: Colors.textMuted,
+};
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending: Colors.accent,
@@ -37,6 +54,7 @@ export default function MyOrdersScreen() {
   const { user } = useAuth();
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
   const [orders, setOrders] = useState<Order[]>([]);
+  const [reviewedKeys, setReviewedKeys] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -46,6 +64,12 @@ export default function MyOrdersScreen() {
       const data =
         tab === 'buy' ? await getMyOrders(user.uid) : await getOrdersBySeller(user.uid);
       setOrders(data);
+      if (tab === 'buy' && data.length) {
+        const revs = await getReviewsForOrders(data.map((o) => o.id));
+        setReviewedKeys(new Set(revs.map((r: Review) => `${r.orderId}_${r.productId}`)));
+      } else {
+        setReviewedKeys(new Set());
+      }
     } catch {
       setOrders([]);
     } finally {
@@ -77,7 +101,7 @@ export default function MyOrdersScreen() {
 
   return (
     <Screen>
-      <AppHeader title="Đơn hàng của tôi" onBack={() => router.back()} />
+      <AppHeader title="Đơn hàng của tôi" onBack={safeBack} />
       <View style={styles.segmentWrap}>
         <Segmented
           options={[
@@ -98,7 +122,7 @@ export default function MyOrdersScreen() {
           contentContainerStyle={styles.content}
           ListEmptyComponent={
             <EmptyState
-              icon="receipt-long"
+              icon={ReceiptText}
               title="Chưa có đơn hàng"
               message={tab === 'buy' ? 'Bạn chưa đặt đơn hàng nào.' : 'Chưa có ai đặt hàng sản phẩm của bạn.'}
             />
@@ -113,21 +137,48 @@ export default function MyOrdersScreen() {
                   small
                 />
               </View>
+              <View style={styles.badgeRow}>
+                <Badge
+                  label={`${item.paymentMethod === 'vietqr' ? 'VietQR' : 'COD'} · ${PAYMENT_LABELS[(item.paymentStatus as PaymentStatus) ?? 'paid'] ?? item.paymentStatus}`}
+                  backgroundColor={PAYMENT_COLORS[(item.paymentStatus as PaymentStatus) ?? 'paid'] ?? Colors.textMuted}
+                  small
+                />
+                {item.paymentMethod === 'vietqr' && item.paymentStatus === 'pending' && tab === 'buy' ? (
+                  <Pressable onPress={() => router.push(`/orders/payment?orderId=${item.id}`)} style={styles.payLink}>
+                    <Text style={styles.payLinkText}>Thanh toán ngay</Text>
+                  </Pressable>
+                ) : null}
+              </View>
               <Text style={styles.orderDate}>{formatDateTime(item.createdAt)}</Text>
 
-              {item.items.map((it, i) => (
-                <Pressable
-                  key={`${it.productId}-${i}`}
-                  style={styles.item}
-                  onPress={() => router.push(`/product/${it.productId}`)}>
-                  <Image source={{ uri: it.image }} style={styles.itemImage} contentFit="cover" />
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName} numberOfLines={1}>{it.name}</Text>
-                    <Text style={styles.itemMeta}>x{it.quantity}</Text>
-                  </View>
-                  <Text style={styles.itemPrice}>{formatCurrency(it.price * it.quantity)}</Text>
-                </Pressable>
-              ))}
+              {item.items.map((it, i) => {
+                const key = `${item.id}_${it.productId}`;
+                const already = reviewedKeys.has(key);
+                const canReview = tab === 'buy' && item.status === 'completed' && !already;
+                return (
+                  <Pressable
+                    key={`${it.productId}-${i}`}
+                    style={styles.item}
+                    onPress={() => router.push(`/product/${it.productId}`)}>
+                    <Image source={{ uri: it.image }} style={styles.itemImage} contentFit="cover" />
+                    <View style={styles.itemInfo}>
+                      <Text style={styles.itemName} numberOfLines={1}>{it.name}</Text>
+                      <Text style={styles.itemMeta}>x{it.quantity}</Text>
+                      {already ? <Text style={styles.reviewedLabel}>Đã đánh giá</Text> : null}
+                    </View>
+                    <View style={styles.itemRight}>
+                      <Text style={styles.itemPrice}>{formatCurrency(it.price * it.quantity)}</Text>
+                      {canReview ? (
+                        <Pressable
+                          onPress={() => router.push(`/orders/review?orderId=${item.id}&productId=${it.productId}`)}
+                          style={styles.reviewBtn}>
+                          <Text style={styles.reviewBtnText}>Đánh giá</Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  </Pressable>
+                );
+              })}
 
               <View style={styles.divider} />
               <View style={styles.footer}>
@@ -138,24 +189,43 @@ export default function MyOrdersScreen() {
                 <Text style={styles.total}>{formatCurrency(item.totalAmount)}</Text>
               </View>
 
-              {tab === 'sell' && item.status !== 'completed' && item.status !== 'cancelled' ? (
-                <View style={styles.actions}>
-                  {SELLER_ACTIONS.filter((a) => a.status === item.status).map((a) => (
-                    <Button
-                      key={a.status}
-                      title={a.label}
-                      small
-                      onPress={() => handleStatusChange(item, a.next)}
-                    />
-                  ))}
-                  <Button
-                    title="Huỷ đơn"
-                    variant="ghost"
-                    small
-                    onPress={() => handleStatusChange(item, 'cancelled')}
-                  />
-                </View>
-              ) : null}
+              <View style={styles.actions}>
+                {/* Nhắn tin với đối phương */}
+                <Button
+                  title="Nhắn tin"
+                  variant="outline"
+                  small
+                  icon={MessageCircle}
+                  onPress={async () => {
+                    if (!user) return;
+                    try {
+                      const otherId = tab === 'buy' ? item.sellerIds[0] : item.buyerId;
+                      if (!otherId || otherId === user.uid) {
+                        Toast.show({ type: 'error', text1: 'Không thể nhắn với chính mình.' });
+                        return;
+                      }
+                      const convId = await getOrCreateConversation({
+                        currentUserId: user.uid,
+                        otherUserId: otherId,
+                        productId: item.items[0]?.productId ?? null,
+                        productName: item.items[0]?.name ?? null,
+                        productImage: item.items[0]?.image ?? null,
+                      });
+                      router.push(`/chat/${convId}`);
+                    } catch (e) {
+                      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+                    }
+                  }}
+                />
+                {tab === 'sell' && item.status !== 'completed' && item.status !== 'cancelled'
+                  ? SELLER_ACTIONS.filter((a) => a.status === item.status).map((a) => (
+                      <Button key={a.status} title={a.label} small onPress={() => handleStatusChange(item, a.next)} />
+                    ))
+                  : null}
+                {tab === 'sell' && item.status !== 'completed' && item.status !== 'cancelled' ? (
+                  <Button title="Huỷ đơn" variant="ghost" small onPress={() => handleStatusChange(item, 'cancelled')} />
+                ) : null}
+              </View>
             </View>
           )}
         />
@@ -185,6 +255,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  payLink: {
+    backgroundColor: Colors.primarySoft,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  payLinkText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.primary,
   },
   orderId: {
     fontSize: 14,
@@ -226,6 +313,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.text,
   },
+  itemRight: { alignItems: 'flex-end', gap: 4 },
+  reviewedLabel: { fontSize: 11, color: Colors.success, marginTop: 2 },
+  reviewBtn: { backgroundColor: Colors.accentSoft, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginTop: 4, borderWidth: 1, borderColor: Colors.accent },
+  reviewBtnText: { fontSize: 11, fontWeight: '700', color: Colors.text },
   divider: {
     height: 1,
     backgroundColor: Colors.border,

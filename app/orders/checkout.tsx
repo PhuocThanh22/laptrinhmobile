@@ -1,8 +1,8 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Check, Circle, CircleDot, QrCode, Truck } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { AppHeader } from '@/components/AppHeader';
@@ -12,7 +12,7 @@ import { Loading } from '@/components/Loading';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { Colors } from '@/constants/colors';
-import { DEFAULT_PRODUCT_IMAGE } from '@/constants/config';
+import { DEFAULT_PRODUCT_IMAGE, vietQRConfig } from '@/constants/config';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { getProductById } from '@/services/productService';
@@ -20,8 +20,9 @@ import { createOrder } from '@/services/orderService';
 import { getErrorMessage } from '@/utils/errors';
 import { formatCurrency } from '@/utils/format';
 import { validateOrder } from '@/utils/validation';
-import type { OrderItem, Product } from '@/types';
+import type { OrderItem, PaymentMethod, Product } from '@/types';
 
+import { safeBack } from '@/utils/navigation';
 type Mode = 'cart' | 'buyNow' | 'auctionWin';
 
 export default function CheckoutScreen() {
@@ -37,6 +38,7 @@ export default function CheckoutScreen() {
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [address, setAddress] = useState('');
   const [note, setNote] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -104,11 +106,16 @@ export default function CheckoutScreen() {
         phone,
         address,
         note,
+        paymentMethod,
       });
       if (mode === 'cart') await clear();
-      router.replace(
-        `/orders/success?orderId=${order.id}&total=${order.totalAmount}&count=${orderItems.length}`,
-      );
+      if (paymentMethod === 'vietqr') {
+        router.replace(`/orders/payment?orderId=${order.id}`);
+      } else {
+        router.replace(
+          `/orders/success?orderId=${order.id}&total=${order.totalAmount}&count=${orderItems.length}`,
+        );
+      }
     } catch (e) {
       Toast.show({ type: 'error', text1: getErrorMessage(e) });
     } finally {
@@ -118,12 +125,12 @@ export default function CheckoutScreen() {
 
   return (
     <Screen>
-      <AppHeader title="Thanh toán" onBack={() => router.back()} />
+      <AppHeader title="Thanh toán" onBack={safeBack} />
 
       {loading ? (
         <Loading text="Đang tải thông tin..." />
       ) : error ? (
-        <ErrorState message={error} onRetry={() => router.back()} />
+        <ErrorState message={error} onRetry={safeBack} />
       ) : orderItems.length === 0 ? (
         <ErrorState message="Đơn hàng trống." />
       ) : (
@@ -152,14 +159,36 @@ export default function CheckoutScreen() {
 
             {/* Payment */}
             <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
-            <View style={styles.paymentCard}>
-              <MaterialIcons name="local-shipping" size={24} color={Colors.primary} />
+            <Pressable
+              onPress={() => setPaymentMethod('cod')}
+              style={[styles.paymentCard, paymentMethod === 'cod' && styles.paymentCardActive]}>
+              <Truck size={24} color={Colors.primary} />
               <View style={styles.paymentInfo}>
                 <Text style={styles.paymentTitle}>COD - Thanh toán khi nhận hàng</Text>
                 <Text style={styles.paymentDesc}>Trả tiền mặt khi nhận được hàng</Text>
               </View>
-              <MaterialIcons name="check-circle" size={22} color={Colors.success} />
-            </View>
+              {paymentMethod === 'cod' ? (
+                <CircleDot size={22} color={Colors.primary} />
+              ) : (
+                <Circle size={22} color={Colors.textMuted} />
+              )}
+            </Pressable>
+            <Pressable
+              onPress={() => setPaymentMethod('vietqr')}
+              style={[styles.paymentCard, paymentMethod === 'vietqr' && styles.paymentCardActive]}>
+              <QrCode size={24} color={Colors.primary} />
+              <View style={styles.paymentInfo}>
+                <Text style={styles.paymentTitle}>VietQR - Chuyển khoản ngân hàng</Text>
+                <Text style={styles.paymentDesc}>
+                  Quét mã QR {vietQRConfig.bankId} · {vietQRConfig.accountNo} · {formatCurrency(totalAmount)}
+                </Text>
+              </View>
+              {paymentMethod === 'vietqr' ? (
+                <CircleDot size={22} color={Colors.primary} />
+              ) : (
+                <Circle size={22} color={Colors.textMuted} />
+              )}
+            </Pressable>
 
             {/* Order summary */}
             <Text style={styles.sectionTitle}>Đơn hàng</Text>
@@ -183,7 +212,7 @@ export default function CheckoutScreen() {
 
             <Button
               title={submitting ? 'Đang đặt hàng...' : 'Đặt hàng'}
-              icon="check"
+              icon={Check}
               loading={submitting}
               onPress={handlePlaceOrder}
               style={styles.submit}
@@ -225,8 +254,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     padding: 14,
-    marginBottom: 16,
+    marginBottom: 10,
     gap: 12,
+  },
+  paymentCardActive: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primarySoft,
   },
   paymentInfo: {
     flex: 1,

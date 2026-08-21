@@ -1,4 +1,13 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import {
+  ChevronRight,
+  CircleUser,
+  Gavel,
+  LogOut,
+  MessageCircle,
+  Package,
+  ReceiptText,
+  type LucideIcon,
+} from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -15,15 +24,16 @@ import { getMyBids } from '@/services/auctionService';
 interface MenuItem {
   key: string;
   label: string;
-  icon: keyof typeof MaterialIcons.glyphMap;
+  icon: LucideIcon;
   href: string;
 }
 
 const MENU: MenuItem[] = [
-  { key: 'products', label: 'Sản phẩm của tôi', icon: 'inventory-2', href: '/profile/my-products' },
-  { key: 'orders', label: 'Đơn hàng của tôi', icon: 'receipt-long', href: '/orders/my-orders' },
-  { key: 'bids', label: 'Phiếu đấu giá của tôi', icon: 'gavel', href: '/profile/my-bids' },
-  { key: 'account', label: 'Thông tin tài khoản', icon: 'account-circle', href: '/profile/account' },
+  { key: 'products', label: 'Sản phẩm của tôi', icon: Package, href: '/profile/my-products' },
+  { key: 'orders', label: 'Đơn hàng của tôi', icon: ReceiptText, href: '/orders/my-orders' },
+  { key: 'chat', label: 'Tin nhắn', icon: MessageCircle, href: '/chat' },
+  { key: 'bids', label: 'Phiếu đấu giá của tôi', icon: Gavel, href: '/profile/my-bids' },
+  { key: 'account', label: 'Thông tin tài khoản', icon: CircleUser, href: '/profile/account' },
 ];
 
 export default function ProfileScreen() {
@@ -93,10 +103,10 @@ export default function ProfileScreen() {
               style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}
               onPress={() => router.push(item.href as never)}>
               <View style={styles.menuIcon}>
-                <MaterialIcons name={item.icon} size={22} color={Colors.primary} />
+                <item.icon size={22} color={Colors.primary} />
               </View>
               <Text style={styles.menuLabel}>{item.label}</Text>
-              <MaterialIcons name="chevron-right" size={22} color={Colors.textMuted} />
+              <ChevronRight size={22} color={Colors.textMuted} />
             </Pressable>
           ))}
         </View>
@@ -105,7 +115,7 @@ export default function ProfileScreen() {
         <Pressable
           style={({ pressed }) => [styles.logout, pressed && styles.pressed]}
           onPress={handleLogout}>
-          <MaterialIcons name="logout" size={22} color={Colors.danger} />
+          <LogOut size={22} color={Colors.danger} />
           <Text style={styles.logoutText}>Đăng xuất</Text>
         </Pressable>
 

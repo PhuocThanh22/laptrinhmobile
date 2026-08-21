@@ -21,8 +21,34 @@ import {
 } from 'firebase/firestore';
 
 import { requireFirebase } from './firebase';
+import { sendAuctionWinEmail } from './mailService';
 import { getUsersByIds } from './userService';
+import { formatCurrency } from '@/utils/format';
 import type { Bid, Product } from '@/types';
+
+/** Winner phải hoàn tất đơn trong 24 giờ kể từ khi thắng — quá hạn chuyển quyền mua. */
+export const WINNER_ORDER_WINDOW_MS = 24 * 3600_000;
+
+/** Gửi email thông báo thắng cho winner (fire-and-forget, lỗi bỏ qua). */
+async function notifyAuctionWinner(input: {
+  productName: string;
+  winnerId: string;
+  amount: number;
+}): Promise<void> {
+  try {
+    const users = await getUsersByIds([input.winnerId]);
+    const winner = users[input.winnerId];
+    if (!winner?.email) return;
+    await sendAuctionWinEmail({
+      email: winner.email,
+      name: winner.name,
+      productName: input.productName,
+      amount: formatCurrency(input.amount),
+    });
+  } catch {
+    // Gửi mail thất bại không ảnh hưởng nghiệp vụ đấu giá.
+  }
+}
 
 /** Thực hiện một lượt đấu giá. Ném Error với thông báo tiếng Việt nếu không hợp lệ. */
 export async function placeBid(input: {
@@ -110,11 +136,74 @@ export async function endAuction(productId: string): Promise<void> {
     ? bids.reduce((best, b) => (b.amount > best.amount ? b : best), bids[0])
     : null;
 
+  const now = Date.now();
   await updateDoc(doc(db, 'products', productId), {
     status: 'auction_ended',
     winnerId: highest ? highest.bidderId : null,
     currentPrice: highest ? highest.amount : product.currentPrice ?? product.startingPrice ?? 0,
+    // Winner có 24h để đặt hàng; quá hạn quyền mua chuyển cho người kế tiếp.
+    winnerDeadline: highest ? now + WINNER_ORDER_WINDOW_MS : null,
+    pastWinners: [],
   });
+
+  // Email thông báo thắng cho winner (bắt buộc vào app điền thông tin nhận hàng).
+  if (highest) {
+    await notifyAuctionWinner({
+      productName: product.name,
+      winnerId: highest.bidderId,
+      amount: highest.amount,
+    });
+  }
+}
+
+/**
+ * Huỷ quyền mua của winner đã bỏ cuộc (quá hạn không đặt hàng) và chuyển
+ * cho người đặt giá cao nhất tiếp theo (không tính các winner đã bỏ cuộc).
+ * Không còn ứng viên -> sản phẩm kết thúc không có người thắng.
+ */
+export async function revokeExpiredWinner(productId: string): Promise<void> {
+  const { db } = requireFirebase();
+
+  const snap = await getDoc(doc(db, 'products', productId));
+  if (!snap.exists()) return;
+  const p = { id: productId, ...snap.data() } as Product;
+  if (p.status !== 'auction_ended' || !p.winnerId) return;
+  if ((p.winnerDeadline ?? Number.MAX_SAFE_INTEGER) > Date.now()) return;
+
+  const pastWinners = [...(p.pastWinners ?? []), p.winnerId];
+  const bids = await getBidsForProduct(productId);
+  // bids đã sắp xếp giảm dần theo giá — người hợp lệ đầu tiên là người kế nhiệm.
+  const next = bids.find((b) => !pastWinners.includes(b.bidderId)) ?? null;
+
+  await updateDoc(doc(db, 'products', productId), {
+    winnerId: next ? next.bidderId : null,
+    currentPrice: next ? next.amount : p.currentPrice ?? p.startingPrice ?? 0,
+    winnerDeadline: next ? Date.now() + WINNER_ORDER_WINDOW_MS : null,
+    pastWinners,
+  });
+
+  if (next) {
+    await notifyAuctionWinner({
+      productName: p.name,
+      winnerId: next.bidderId,
+      amount: next.amount,
+    });
+  }
+}
+
+/** Quét và huỷ quyền mua của các winner đã quá hạn đặt hàng. */
+export async function enforceWinnerDeadlines(): Promise<void> {
+  const { db } = requireFirebase();
+  const q = query(collection(db, 'products'), where('status', '==', 'auction_ended'));
+  const snap = await getDocs(q);
+  const now = Date.now();
+  const overdue = snap.docs.filter((d) => {
+    const data = d.data() as Product;
+    return !!data.winnerId && (data.winnerDeadline ?? Number.MAX_SAFE_INTEGER) <= now;
+  });
+  for (const d of overdue) {
+    await revokeExpiredWinner(d.id);
+  }
 }
 
 /** Quét và kết thúc các phiên đấu giá đã hết thời gian. */
@@ -130,6 +219,9 @@ export async function endExpiredAuctions(): Promise<void> {
   for (const d of expired) {
     await endAuction(d.id);
   }
+
+  // Sau khi chốt phiên, kiểm tra thêm các winner bỏ cuộc quá hạn.
+  await enforceWinnerDeadlines();
 }
 
 /** Lịch sử đấu giá của một sản phẩm (theo giá giảm dần). */

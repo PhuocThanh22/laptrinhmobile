@@ -35,6 +35,10 @@ export interface Product {
   bidsCount?: number;
   winnerId?: string | null;
   winnerName?: string;
+  /** Hạn chót winner phải hoàn tất đơn hàng (epoch ms). Quá hạn -> chuyển quyền mua. */
+  winnerDeadline?: number | null;
+  /** Các winner đã bỏ cuộc (không đặt hàng đúng hạn) — không được thắng lại. */
+  pastWinners?: string[];
 
   status: ProductStatus;
   createdAt: number; // epoch ms
@@ -70,6 +74,9 @@ export type OrderStatus =
   | 'completed'
   | 'cancelled';
 
+export type PaymentMethod = 'cod' | 'vietqr';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'expired';
+
 export interface Order {
   id: string;
   buyerId: string;
@@ -83,9 +90,11 @@ export interface Order {
   address: string;
   note?: string;
 
-  paymentMethod: string; // 'cod'
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   status: OrderStatus;
   createdAt: number; // epoch ms
+  paidAt?: number | null;
 }
 
 export interface AppUser {
@@ -95,6 +104,18 @@ export interface AppUser {
   phone?: string;
   avatar?: string;
   createdAt: number; // epoch ms
+}
+
+export interface Review {
+  id: string;
+  productId: string;
+  orderId: string;
+  reviewerId: string;
+  reviewerName?: string;
+  reviewerAvatar?: string;
+  rating: number; // 1-5
+  comment: string;
+  createdAt: number;
 }
 
 export interface CartDocument {

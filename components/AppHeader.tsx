@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { ChevronLeft } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 
@@ -18,7 +18,7 @@ export function AppHeader({ title, subtitle, onBack, right, style }: AppHeaderPr
       <View style={styles.side}>
         {onBack ? (
           <Pressable onPress={onBack} hitSlop={12} style={styles.backBtn}>
-            <MaterialIcons name="arrow-back-ios" size={20} color={Colors.text} />
+            <ChevronLeft size={20} color={Colors.text} />
           </Pressable>
         ) : null}
       </View>

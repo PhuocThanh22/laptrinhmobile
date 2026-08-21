@@ -1,4 +1,15 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import {
+  CircleCheck,
+  CircleStop,
+  CreditCard,
+  Gavel,
+  MessageCircle,
+  ShoppingCart,
+  SquarePen,
+  Timer,
+  Trash2,
+  Zap,
+} from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -10,8 +21,7 @@ import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import { Countdown } from '@/components/Countdown';
 import { ErrorState } from '@/components/ErrorState';
-import { ImageCarousel } from '@/components/ImageCarousel';
-import { ProductVideo } from '@/components/ProductVideo';
+import { MediaCarousel } from '@/components/MediaCarousel';
 import { DetailSkeleton } from '@/components/Skeleton';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
@@ -21,12 +31,16 @@ import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { getBidsForProduct, placeBid, endAuction, endExpiredAuctions } from '@/services/auctionService';
 import { deleteProduct, getProductById, markProductAsSold } from '@/services/productService';
+import { getOrCreateConversation } from '@/services/chatService';
+import { getReviewsForProduct, calcRatingStats } from '@/services/reviewService';
+import { RatingSummary, RatingStars } from '@/components/RatingStars';
 import { getErrorMessage } from '@/utils/errors';
 import { formatCurrency, formatDateTime } from '@/utils/format';
 import { getMinNextBid, isAuctionActive, shortName } from '@/utils/auction';
 import { validateBid } from '@/utils/validation';
 import type { Bid, Product } from '@/types';
 
+import { safeBack } from '@/utils/navigation';
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -34,6 +48,7 @@ export default function ProductDetailScreen() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [bids, setBids] = useState<Bid[]>([]);
+  const [reviews, setReviews] = useState<import('@/types').Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bidInput, setBidInput] = useState('');
@@ -59,10 +74,12 @@ export default function ProductDetailScreen() {
         return;
       }
       setProduct(p);
-      if (p.saleType === 'auction') {
-        const b = await getBidsForProduct(id);
-        setBids(b);
-      }
+      const [b, r] = await Promise.all([
+        p.saleType === 'auction' ? getBidsForProduct(id) : Promise.resolve([] as Bid[]),
+        getReviewsForProduct(id),
+      ]);
+      setBids(b);
+      setReviews(r);
       setError(null);
     } catch (e) {
       setError(getErrorMessage(e));
@@ -137,7 +154,7 @@ export default function ProductDetailScreen() {
           try {
             await deleteProduct(product.id);
             Toast.show({ type: 'success', text1: 'Đã xoá sản phẩm.' });
-            router.back();
+            safeBack();
           } catch (e) {
             Toast.show({ type: 'error', text1: getErrorMessage(e) });
           }
@@ -181,7 +198,7 @@ export default function ProductDetailScreen() {
   if (loading) {
     return (
       <Screen>
-        <AppHeader title="Sản phẩm" onBack={() => router.back()} />
+        <AppHeader title="Sản phẩm" onBack={safeBack} />
         <DetailSkeleton />
       </Screen>
     );
@@ -190,7 +207,7 @@ export default function ProductDetailScreen() {
   if (error || !product) {
     return (
       <Screen>
-        <AppHeader title="Sản phẩm" onBack={() => router.back()} />
+        <AppHeader title="Sản phẩm" onBack={safeBack} />
         <ErrorState message={error ?? 'Không tìm thấy sản phẩm.'} onRetry={load} />
       </Screen>
     );
@@ -208,13 +225,12 @@ export default function ProductDetailScreen() {
 
   return (
     <Screen>
-      <AppHeader title={isAuction ? 'Chi tiết đấu giá' : 'Chi tiết sản phẩm'} onBack={() => router.back()} />
+      <AppHeader title={isAuction ? 'Chi tiết đấu giá' : 'Chi tiết sản phẩm'} onBack={safeBack} />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <ImageCarousel images={product.images} />
-        {product.video ? <ProductVideo uri={product.video} /> : null}
+        <MediaCarousel images={product.images} video={product.video} />
 
         <View style={styles.content}>
           {/* Badges */}
@@ -238,7 +254,7 @@ export default function ProductDetailScreen() {
                 <Text style={styles.auctionHeaderTitle}>Đấu giá</Text>
                 {active && product.endTime ? (
                   <View style={styles.countdownRow}>
-                    <MaterialIcons name="timer" size={16} color={Colors.accent} />
+                    <Timer size={16} color={Colors.accent} />
                     <Countdown endTime={product.endTime} onEnd={load} />
                   </View>
                 ) : (
@@ -276,7 +292,7 @@ export default function ProductDetailScreen() {
           {isAuction && active ? (
             <View style={styles.bidSection}>
               {isOwner ? (
-                <Button title="Kết thúc đấu giá ngay" variant="danger" icon="stop-circle" onPress={handleEndNow} />
+                <Button title="Kết thúc đấu giá ngay" variant="danger" icon={CircleStop} onPress={handleEndNow} />
               ) : (
                 <>
                   <Text style={styles.minBidHint}>
@@ -305,7 +321,7 @@ export default function ProductDetailScreen() {
                     </View>
                     <Button
                       title="Đặt giá"
-                      icon="gavel"
+                      icon={Gavel}
                       loading={placing}
                       onPress={handlePlaceBid}
                       style={styles.bidButton}
@@ -325,10 +341,23 @@ export default function ProductDetailScreen() {
                     Người thắng cuộc: <Text style={styles.winnerName}>{product.winnerName ?? 'Đã xác định'}</Text>
                   </Text>
                   <Text style={styles.winnerPrice}>Giá chốt: {formatCurrency(currentPrice)}</Text>
+                  {product.winnerDeadline ? (
+                    <View style={styles.deadlineBox}>
+                      <View style={styles.deadlineRow}>
+                        <Timer size={16} color={Colors.danger} />
+                        <Text style={styles.deadlineLabel}>Hạn đặt hàng (bắt buộc):</Text>
+                        <Countdown endTime={product.winnerDeadline} onEnd={load} />
+                      </View>
+                      <Text style={styles.deadlineWarn}>
+                        Thắng đấu giá là cam kết mua. Quá hạn, quyền mua sẽ chuyển cho người đặt giá cao nhất
+                        tiếp theo.
+                      </Text>
+                    </View>
+                  ) : null}
                   {isWinner ? (
                     <Button
                       title="Đặt hàng ngay"
-                      icon="payment"
+                      icon={CreditCard}
                       style={styles.winnerButton}
                       onPress={() => router.push(`/orders/checkout?mode=auctionWin&productId=${product.id}`)}
                     />
@@ -352,7 +381,33 @@ export default function ProductDetailScreen() {
               <Text style={styles.sellerName}>{product.sellerName}</Text>
               <Text style={styles.sellerDate}>Đăng lúc {formatDateTime(product.createdAt)}</Text>
             </View>
-            {isOwner ? <Badge label="Bạn" backgroundColor={Colors.primarySoft} color={Colors.primary} /> : null}
+            {isOwner ? (
+              <Badge label="Bạn" backgroundColor={Colors.primarySoft} color={Colors.primary} />
+            ) : (
+              <Button
+                title="Nhắn tin"
+                small
+                icon={MessageCircle}
+                onPress={async () => {
+                  if (!user) {
+                    Toast.show({ type: 'error', text1: 'Vui lòng đăng nhập để nhắn tin.' });
+                    return;
+                  }
+                  try {
+                    const convId = await getOrCreateConversation({
+                      currentUserId: user.uid,
+                      otherUserId: product.sellerId,
+                      productId: product.id,
+                      productName: product.name,
+                      productImage: product.images?.[0],
+                    });
+                    router.push(`/chat/${convId}`);
+                  } catch (e) {
+                    Toast.show({ type: 'error', text1: getErrorMessage(e) });
+                  }
+                }}
+              />
+            )}
           </View>
 
           {/* Bid history */}
@@ -377,13 +432,38 @@ export default function ProductDetailScreen() {
             </>
           ) : null}
 
+          {/* Reviews */}
+          <View style={styles.reviewHeader}>
+            <Text style={styles.sectionTitle}>Đánh giá</Text>
+            <RatingSummary avg={calcRatingStats(reviews).avg} count={calcRatingStats(reviews).count} />
+          </View>
+          {reviews.length ? (
+            <View style={styles.reviewList}>
+              {reviews.map((rv) => (
+                <View key={rv.id} style={styles.reviewCard}>
+                  <View style={styles.reviewTop}>
+                    <Avatar name={rv.reviewerName} uri={rv.reviewerAvatar} size={32} />
+                    <View style={styles.reviewMeta}>
+                      <Text style={styles.reviewName}>{rv.reviewerName}</Text>
+                      <Text style={styles.reviewDate}>{formatDateTime(rv.createdAt)}</Text>
+                    </View>
+                    <RatingStars rating={rv.rating} size={14} readonly />
+                  </View>
+                  <Text style={styles.reviewComment}>{rv.comment}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.noReviewText}>Chưa có đánh giá nào cho sản phẩm này.</Text>
+          )}
+
           {/* Owner actions */}
           {isOwner && !isAuction ? (
             <View style={styles.ownerActions}>
               <Button
                 title={sold ? 'Đã bán' : 'Đánh dấu đã bán'}
                 variant={sold ? 'ghost' : 'success'}
-                icon="check-circle"
+                icon={CircleCheck}
                 disabled={sold}
                 onPress={handleMarkSold}
                 style={styles.ownerAction}
@@ -391,11 +471,11 @@ export default function ProductDetailScreen() {
               <Button
                 title="Chỉnh sửa"
                 variant="outline"
-                icon="edit"
+                icon={SquarePen}
                 onPress={() => router.push(`/product/edit/${product.id}`)}
                 style={styles.ownerAction}
               />
-              <Button title="Xoá" variant="danger" icon="delete" onPress={handleDelete} style={styles.ownerAction} />
+              <Button title="Xoá" variant="danger" icon={Trash2} onPress={handleDelete} style={styles.ownerAction} />
             </View>
           ) : null}
 
@@ -403,7 +483,7 @@ export default function ProductDetailScreen() {
             <Button
               title="Chỉnh sửa sản phẩm"
               variant="outline"
-              icon="edit"
+              icon={SquarePen}
               onPress={() => router.push(`/product/edit/${product.id}`)}
               style={styles.ownerAction}
             />
@@ -426,13 +506,13 @@ export default function ProductDetailScreen() {
               <Button
                 title="Mua ngay"
                 variant="outline"
-                icon="flash-on"
+                icon={Zap}
                 onPress={() => router.push(`/orders/checkout?mode=buyNow&productId=${product.id}`)}
                 style={styles.buyNow}
               />
               <Button
                 title="Thêm vào giỏ"
-                icon="add-shopping-cart"
+                icon={ShoppingCart}
                 loading={actionLoading}
                 onPress={handleAddToCart}
                 style={styles.addCart}
@@ -622,6 +702,28 @@ const styles = StyleSheet.create({
   winnerButton: {
     marginTop: 10,
   },
+  deadlineBox: {
+    marginTop: 10,
+    backgroundColor: Colors.dangerSoft,
+    borderRadius: 12,
+    padding: 12,
+    gap: 6,
+  },
+  deadlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  deadlineLabel: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: Colors.text,
+  },
+  deadlineWarn: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: Colors.danger,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
@@ -719,4 +821,24 @@ const styles = StyleSheet.create({
   addCart: {
     flex: 1,
   },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 18,
+  },
+  reviewList: { gap: 10, marginTop: 8 },
+  reviewCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 12,
+  },
+  reviewTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  reviewMeta: { flex: 1 },
+  reviewName: { fontSize: 13, fontWeight: '700', color: Colors.text },
+  reviewDate: { fontSize: 11, color: Colors.textMuted, marginTop: 1 },
+  reviewComment: { fontSize: 13, color: Colors.text, marginTop: 8, lineHeight: 19 },
+  noReviewText: { fontSize: 13, color: Colors.textMuted, marginTop: 8, fontStyle: 'italic' },
 });

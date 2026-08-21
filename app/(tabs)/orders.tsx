@@ -1,3 +1,4 @@
+import { ReceiptText } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -104,7 +105,7 @@ export default function OrdersTabScreen() {
           contentContainerStyle={styles.content}
           ListEmptyComponent={
             <EmptyState
-              icon="receipt-long"
+              icon={ReceiptText}
               title="Chưa có đơn hàng"
               message={tab === 'buy' ? 'Bạn chưa đặt đơn hàng nào.' : 'Chưa có ai đặt hàng sản phẩm của bạn.'}
             />

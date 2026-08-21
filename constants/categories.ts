@@ -1,13 +1,25 @@
+import {
+  BookOpen,
+  Footprints,
+  Headphones,
+  Laptop,
+  MonitorSmartphone,
+  Shapes,
+  Shirt,
+  Smartphone,
+  type LucideIcon,
+} from 'lucide-react-native';
+
 /** Danh mục sản phẩm. `key` là giá trị lưu trong Firestore. */
 export const CATEGORIES = [
-  { key: 'sach', label: 'Sách', icon: 'menu-book' },
-  { key: 'dien-tu', label: 'Điện tử', icon: 'devices' },
-  { key: 'dien-thoai', label: 'Điện thoại', icon: 'smartphone' },
-  { key: 'laptop', label: 'Laptop', icon: 'laptop' },
-  { key: 'quan-ao', label: 'Quần áo', icon: 'checkroom' },
-  { key: 'giay-dep', label: 'Giày dép', icon: 'directions-run' },
-  { key: 'phu-kien', label: 'Phụ kiện', icon: 'headphones' },
-  { key: 'khac', label: 'Khác', icon: 'category' },
+  { key: 'sach', label: 'Sách', icon: BookOpen },
+  { key: 'dien-tu', label: 'Điện tử', icon: MonitorSmartphone },
+  { key: 'dien-thoai', label: 'Điện thoại', icon: Smartphone },
+  { key: 'laptop', label: 'Laptop', icon: Laptop },
+  { key: 'quan-ao', label: 'Quần áo', icon: Shirt },
+  { key: 'giay-dep', label: 'Giày dép', icon: Footprints },
+  { key: 'phu-kien', label: 'Phụ kiện', icon: Headphones },
+  { key: 'khac', label: 'Khác', icon: Shapes },
 ] as const;
 
 export type CategoryKey = (typeof CATEGORIES)[number]['key'];
@@ -16,8 +28,8 @@ export function getCategoryLabel(key: string): string {
   return CATEGORIES.find((c) => c.key === key)?.label ?? 'Khác';
 }
 
-export function getCategoryIcon(key: string): string {
-  return CATEGORIES.find((c) => c.key === key)?.icon ?? 'category';
+export function getCategoryIcon(key: string): LucideIcon {
+  return CATEGORIES.find((c) => c.key === key)?.icon ?? Shapes;
 }
 
 /** Tình trạng sản phẩm. `key` là giá trị lưu trong Firestore. */

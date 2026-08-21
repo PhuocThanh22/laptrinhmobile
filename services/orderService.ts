@@ -18,7 +18,7 @@ import {
 
 import { requireFirebase } from './firebase';
 import { getSingleUser } from './userService';
-import type { Order, OrderItem, OrderStatus, Product } from '@/types';
+import type { Order, OrderItem, OrderStatus, PaymentMethod, PaymentStatus, Product } from '@/types';
 
 export interface CreateOrderInput {
   buyerId: string;
@@ -27,6 +27,7 @@ export interface CreateOrderInput {
   phone: string;
   address: string;
   note?: string;
+  paymentMethod?: PaymentMethod;
 }
 
 export async function createOrder(input: CreateOrderInput): Promise<Order> {
@@ -38,6 +39,8 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const buyer = await getSingleUser(input.buyerId);
 
   const orderRef = doc(collection(db, 'orders'));
+  const paymentMethod: PaymentMethod = input.paymentMethod ?? 'cod';
+  const paymentStatus: PaymentStatus = paymentMethod === 'vietqr' ? 'pending' : 'paid';
   const orderData: Omit<Order, 'id'> = {
     buyerId: input.buyerId,
     buyerName: buyer?.name ?? '',
@@ -48,9 +51,11 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     phone: input.phone.trim(),
     address: input.address.trim(),
     note: input.note?.trim() ?? '',
-    paymentMethod: 'cod',
+    paymentMethod,
+    paymentStatus,
     status: 'pending',
     createdAt: Date.now(),
+    paidAt: paymentStatus === 'paid' ? Date.now() : null,
   };
 
   // Dùng transaction để "đọc - kiểm tra - ghi" là một thao tác nguyên tử:
@@ -74,6 +79,10 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
           }
           if (product.status !== 'auction_ended') {
             throw new Error('Đấu giá chưa kết thúc, không thể đặt hàng.');
+          }
+          // Bắt buộc đặt hàng trong hạn 24h — quá hạn quyền mua đã/chuyển người khác.
+          if (product.winnerDeadline && Date.now() > product.winnerDeadline) {
+            throw new Error('Đã quá hạn 24 giờ đặt hàng sau khi thắng đấu giá.');
           }
           // Đánh dấu sold để ẩn khỏi danh sách (đấu giá đã kết thúc).
           transaction.update(doc(db, 'products', item.productId), { status: 'sold' });
@@ -115,7 +124,23 @@ export async function getOrdersBySeller(sellerId: string): Promise<Order[]> {
   return orders;
 }
 
+export async function getOrderById(orderId: string): Promise<Order | null> {
+  const { db } = requireFirebase();
+  const { getDoc } = await import('firebase/firestore');
+  const snap = await getDoc(doc(db, 'orders', orderId));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as Order;
+}
+
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
   const { db } = requireFirebase();
   await updateDoc(doc(db, 'orders', orderId), { status });
+}
+
+export async function updatePaymentStatus(orderId: string, paymentStatus: PaymentStatus): Promise<void> {
+  const { db } = requireFirebase();
+  await updateDoc(doc(db, 'orders', orderId), {
+    paymentStatus,
+    paidAt: paymentStatus === 'paid' ? Date.now() : null,
+  });
 }

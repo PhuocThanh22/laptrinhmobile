@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { LogIn, Store } from 'lucide-react-native';
 import { Link } from 'expo-router';
 import {
   KeyboardAvoidingView,
@@ -49,7 +49,7 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.logoWrap}>
-            <MaterialIcons name="storefront" size={34} color={Colors.white} />
+            <Store size={34} color={Colors.white} />
           </View>
           <Text style={styles.appName}>{APP_NAME}</Text>
           <Text style={styles.title}>Chào mừng trở lại</Text>
@@ -80,7 +80,7 @@ export default function LoginScreen() {
               title={loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
               onPress={handleLogin}
               loading={loading}
-              icon="login"
+              icon={LogIn}
               style={styles.button}
             />
           </View>

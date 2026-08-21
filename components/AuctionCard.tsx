@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Gavel, Timer } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -38,12 +38,12 @@ export function AuctionCard({ product, width, onPress }: AuctionCardProps) {
         <View style={styles.row}>
           <Badge label="ĐẤU GIÁ" backgroundColor={Colors.accent} small />
           <View style={styles.bidsRow}>
-            <MaterialIcons name="gavel" size={13} color={Colors.textMuted} />
+            <Gavel size={13} color={Colors.textMuted} />
             <Text style={styles.bidsText}>{product.bidsCount ?? 0} lượt</Text>
           </View>
         </View>
         <View style={styles.timeWrap}>
-          <MaterialIcons name="timer" size={14} color={active ? Colors.accent : Colors.textMuted} />
+          <Timer size={14} color={active ? Colors.accent : Colors.textMuted} />
           {active && product.endTime ? (
             <Countdown endTime={product.endTime} />
           ) : ended ? (

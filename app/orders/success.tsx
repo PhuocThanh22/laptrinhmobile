@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { CircleCheck, House, ReceiptText } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -16,7 +16,7 @@ export default function OrderSuccessScreen() {
     <Screen>
       <View style={styles.content}>
         <View style={styles.iconWrap}>
-          <MaterialIcons name="check-circle" size={72} color={Colors.success} />
+          <CircleCheck size={72} color={Colors.success} />
         </View>
         <Text style={styles.title}>Đặt hàng thành công!</Text>
         <Text style={styles.subtitle}>
@@ -30,13 +30,13 @@ export default function OrderSuccessScreen() {
         <View style={styles.actions}>
           <Button
             title="Xem đơn hàng của tôi"
-            icon="receipt-long"
+            icon={ReceiptText}
             onPress={() => router.replace('/orders/my-orders')}
           />
           <Button
             title="Về trang chủ"
             variant="outline"
-            icon="home"
+            icon={House}
             onPress={() => router.dismissAll()}
             style={styles.secondary}
           />

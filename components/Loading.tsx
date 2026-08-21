@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { ShoppingBag } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -59,7 +59,7 @@ function Loader({ text }: { text?: string }) {
       <View style={styles.stage}>
         <Animated.View style={[styles.ring, ringStyle]} />
         <Animated.View style={[styles.logo, logoStyle]}>
-          <MaterialIcons name="shopping-bag" size={30} color={Colors.white} />
+          <ShoppingBag size={30} color={Colors.white} />
         </Animated.View>
       </View>
       <View style={styles.dots}>

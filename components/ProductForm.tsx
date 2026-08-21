@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Check, ImagePlus, Video, X } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -63,8 +63,8 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
     initial?.video ? { uri: initial.video, isRemote: true } : null,
   );
   const videoPlayer = useVideoPlayer(video?.uri ?? null, (player) => {
+    // Không tự phát — chỉ phát khi người dùng bấm nút play trên trình phát
     player.loop = true;
-    player.play();
   });
   const [name, setName] = useState(initial?.name ?? '');
   const [category, setCategory] = useState(initial?.category ?? '');
@@ -197,7 +197,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
           <View key={`${img.uri}-${i}`} style={styles.imageWrap}>
             <Image source={{ uri: img.uri }} style={styles.image} contentFit="cover" />
             <Pressable style={styles.removeBtn} onPress={() => removeImage(i)} hitSlop={6}>
-              <MaterialIcons name="close" size={14} color={Colors.white} />
+              <X size={14} color={Colors.white} />
             </Pressable>
             {img.isRemote ? (
               <View style={styles.remoteTag}>
@@ -208,7 +208,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
         ))}
         {images.length < 5 ? (
           <Pressable style={styles.addImage} onPress={pickImages}>
-            <MaterialIcons name="add-photo-alternate" size={26} color={Colors.primary} />
+            <ImagePlus size={26} color={Colors.primary} />
             <Text style={styles.addImageText}>Thêm ảnh</Text>
           </Pressable>
         ) : null}
@@ -229,14 +229,14 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
               {video.isRemote ? 'Video đã lưu' : 'Video mới chọn'}
             </Text>
             <Pressable style={styles.videoRemove} onPress={removeVideo} hitSlop={6}>
-              <MaterialIcons name="close" size={16} color={Colors.white} />
+              <X size={16} color={Colors.white} />
               <Text style={styles.videoRemoveText}>Bỏ video</Text>
             </Pressable>
           </View>
         </View>
       ) : (
         <Pressable style={styles.addVideo} onPress={pickVideo}>
-          <MaterialIcons name="videocam" size={26} color={Colors.primary} />
+          <Video size={26} color={Colors.primary} />
           <Text style={styles.addVideoText}>Thêm video</Text>
         </Pressable>
       )}
@@ -351,7 +351,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
         title={submitting ? 'Đang xử lý...' : submitLabel}
         onPress={handleSubmit}
         loading={submitting}
-        icon="check"
+        icon={Check}
         style={styles.submit}
       />
       <View style={styles.bottomSpace} />

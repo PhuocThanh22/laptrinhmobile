@@ -109,7 +109,9 @@ service cloud.firestore {
             (resource.data.saleType == 'auction'
               && resource.data.status == 'auction_active'
               && request.resource.data.status == 'auction_ended'
-              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'winnerId', 'currentPrice']))
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'status', 'winnerId', 'currentPrice', 'winnerDeadline', 'pastWinners',
+              ]))
           ))
         ||
         // (C) Người đặt giá cập nhật giá hiện tại + số lượt đấu
@@ -132,7 +134,21 @@ service cloud.firestore {
           && resource.data.endTime <= request.time.toMillis()
           && request.resource.data.sellerId == resource.data.sellerId
           && request.resource.data.status == 'auction_ended'
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'winnerId', 'currentPrice']))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status', 'winnerId', 'currentPrice', 'winnerDeadline', 'pastWinners',
+          ]))
+        ||
+        // (F) Chuyển quyền mua khi winner bỏ cuộc quá hạn không đặt hàng
+        // (bất kỳ người dùng nào cũng có thể kích hoạt — logic kiểm tra ở tầng app)
+        (resource.data.saleType == 'auction'
+          && resource.data.status == 'auction_ended'
+          && resource.data.winnerId != null
+          && resource.data.winnerDeadline != null
+          && resource.data.winnerDeadline <= request.time.toMillis()
+          && request.resource.data.sellerId == resource.data.sellerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'winnerId', 'currentPrice', 'winnerDeadline', 'pastWinners',
+          ]))
       );
 
       // Xoá: chỉ người bán của sản phẩm (sản phẩm có lượt đấu/đơn đang treo
@@ -197,7 +213,7 @@ service cloud.firestore {
         && (resource.data.buyerId == request.auth.uid
           || request.auth.uid in resource.data.sellerIds);
 
-      // Tạo đơn: người mua tạo cho chính mình, dữ liệu hợp lệ, COD.
+      // Tạo đơn: người mua tạo cho chính mình, dữ liệu hợp lệ, COD hoặc VietQR.
       // Lưu ý: các điều kiện "sản phẩm còn bán / đúng người thắng đấu giá"
       // được kiểm tra + đánh dấu 'sold' trong transaction ở tầng app
       // (services/orderService), không thể duyệt từng item trong rules.
@@ -207,7 +223,8 @@ service cloud.firestore {
         && request.resource.data.items.size() > 0
         && isValidList(request.resource.data.sellerIds)
         && request.resource.data.status == 'pending'
-        && request.resource.data.paymentMethod == 'cod'
+        && request.resource.data.paymentMethod in ['cod', 'vietqr']
+        && request.resource.data.paymentStatus in ['pending', 'paid', 'failed', 'expired']
         && request.resource.data.totalAmount is number
         && request.resource.data.totalAmount >= 0
         && request.resource.data.receiverName is string
@@ -219,15 +236,73 @@ service cloud.firestore {
         && request.resource.data.createdAt >= request.time.toMillis() - 60000
         && request.resource.data.createdAt <= request.time.toMillis() + 60000;
 
-      // Cập nhật: chỉ người bán, và CHỈ đổi trạng thái (không đổi thông tin khác).
-      allow update: if signedIn()
-        && request.auth.uid in resource.data.sellerIds
-        && request.resource.data.buyerId == resource.data.buyerId
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
-        && request.resource.data.status in ['pending', 'confirmed', 'shipping', 'completed', 'cancelled'];
+      // Cập nhật: (A) người bán đổi status, (B) người mua cập nhật paymentStatus VietQR
+      allow update: if signedIn() && (
+        // (A) Người bán đổi trạng thái đơn
+        (request.auth.uid in resource.data.sellerIds
+          && request.resource.data.buyerId == resource.data.buyerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status in ['pending', 'confirmed', 'shipping', 'completed', 'cancelled'])
+        ||
+        // (B) Người mua cập nhật paymentStatus (VietQR)
+        (request.auth.uid == resource.data.buyerId
+          && request.resource.data.buyerId == resource.data.buyerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus', 'paidAt'])
+          && request.resource.data.paymentStatus in ['pending', 'paid', 'failed', 'expired'])
+      );
 
       // Không cho xoá đơn hàng.
       allow delete: if false;
+    }
+
+    // ============================================================
+    // reviews — đánh giá (chỉ người mua, đơn completed)
+    // ============================================================
+    match /reviews/{reviewId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.reviewerId == request.auth.uid
+        && request.resource.data.rating is number
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() > 0
+        && request.resource.data.comment.size() <= 500
+        && request.resource.data.productId is string
+        && request.resource.data.orderId is string
+        && request.resource.data.createdAt is number;
+      allow update, delete: if false;
+    }
+
+    // ============================================================
+    // conversations — hội thoại (cả DM global và theo sản phẩm)
+    // ============================================================
+    match /conversations/{convId} {
+      // Liệt kê (list) chỉ cho phép khi query có array-contains auth.uid — get theo id thì chỉ cần là participant
+      allow get: if signedIn() && request.auth.uid in resource.data.participants;
+      allow list: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.participants.size() == 2
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.participantsKey is string
+        && request.resource.data.createdAt is number
+        && request.resource.data.updatedAt is number;
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'lastMessageAt', 'updatedAt']);
+      allow delete: if false;
+
+      match /messages/{msgId} {
+        allow read: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants;
+        allow create: if signedIn()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.createdAt is number;
+        allow update, delete: if false;
+      }
     }
   }
 }

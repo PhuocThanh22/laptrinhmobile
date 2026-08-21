@@ -19,7 +19,7 @@ const { getAuth } = require('firebase-admin/auth');
 const path = require('path');
 const fs = require('fs');
 
-const { buildVerificationHtml, buildPasswordResetHtml } = require('./emailTemplate');
+const { buildVerificationHtml, buildPasswordResetHtml, buildAuctionWinHtml } = require('./emailTemplate');
 
 const PORT = process.env.PORT || 4000;
 
@@ -151,6 +151,67 @@ app.post('/send-password-reset-email', async (req, res) => {
     res.json({ ok: true });
   } catch (e) {
     console.error('[send-password-reset-email]', e.message);
+    res.status(500).json({ error: e.message || 'Lỗi server.' });
+  }
+});
+
+// Gửi email thông báo thắng đấu giá cho winner.
+// App gọi sau khi chốt phiên: endAuction / chuyển quyền mua.
+app.post('/send-auction-win-email', async (req, res) => {
+  const email = String(req.body?.email || '').trim();
+  const name = String(req.body?.name || '').trim();
+  const productName = String(req.body?.productName || '').trim();
+  const amount = String(req.body?.amount || '').trim();
+  const hoursLeft = String(req.body?.hoursLeft || '24 giờ').trim();
+  const deepLink = String(req.body?.deepLink || '').trim();
+
+  if (!email) return res.status(400).json({ error: 'Thiếu email.' });
+
+  if (!process.env.BREVO_API_KEY || !process.env.BREVO_SENDER_EMAIL) {
+    return res.status(500).json({ error: 'Server chưa cấu hình Brevo (BREVO_API_KEY / BREVO_SENDER_EMAIL).' });
+  }
+
+  try {
+    const payload = {
+      sender: {
+        email: process.env.BREVO_SENDER_EMAIL,
+        name: process.env.BREVO_SENDER_NAME || 'MiniShop',
+      },
+      to: [{ email }],
+      subject: `🔨 Bạn đã thắng đấu giá: ${productName || 'Sản phẩm MiniShop'}`,
+      htmlContent: buildAuctionWinHtml({ name, email, productName, amount, hoursLeft, deepLink }),
+      textContent: [
+        `Chào ${name || email},`,
+        '',
+        'Chúc mừng bạn đã THẮNG ĐẤU GIÁ trên MiniShop!',
+        `Sản phẩm: ${productName}`,
+        `Giá chốt: ${amount}`,
+        '',
+        `Vui lòng mở ứng dụng MiniShop trong ${hoursLeft} để điền thông tin nhận hàng và hoàn tất đơn.`,
+        'Lưu ý: thắng đấu giá là cam kết mua. Quá hạn, quyền mua sẽ chuyển cho người đặt giá cao nhất tiếp theo.',
+        '',
+        '— MiniShop',
+      ].join('\n'),
+    };
+
+    const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'api-key': process.env.BREVO_API_KEY,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      const detail = await resp.text();
+      console.error('[Brevo]', resp.status, detail);
+      return res.status(resp.status).json({ error: 'Gửi email thất bại qua Brevo.', detail });
+    }
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[send-auction-win-email]', e.message);
     res.status(500).json({ error: e.message || 'Lỗi server.' });
   }
 });

@@ -1,3 +1,4 @@
+import { SearchX } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -11,6 +12,7 @@ import {
   View,
 } from 'react-native';
 
+import { AppHeader } from '@/components/AppHeader';
 import { CartButton } from '@/components/CartButton';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -74,14 +76,7 @@ export default function CategoriesScreen() {
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Danh mục sản phẩm</Text>
-          <Text style={styles.subtitle}>{results.length} sản phẩm</Text>
-        </View>
-        <CartButton size={38} />
-      </View>
-
+      <AppHeader title="Danh mục sản phẩm" right={<CartButton size={38} />} />
       <View style={styles.searchWrap}>
         <SearchBar value={query} onChangeText={setQuery} />
       </View>
@@ -121,6 +116,10 @@ export default function CategoriesScreen() {
         })}
       </View>
 
+      <View style={styles.countRow}>
+        <Text style={styles.countText}>{results.length} sản phẩm</Text>
+      </View>
+
       {loading ? (
         <ProductGridSkeleton count={4} />
       ) : error ? (
@@ -137,7 +136,7 @@ export default function CategoriesScreen() {
           }
           ListEmptyComponent={
             <EmptyState
-              icon="search-off"
+              icon={SearchX}
               title="Không tìm thấy sản phẩm"
               message="Thử từ khoá hoặc danh mục khác nhé."
             />
@@ -152,42 +151,24 @@ export default function CategoriesScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 6,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: Colors.text,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 1,
-  },
   searchWrap: {
     paddingHorizontal: 16,
-    paddingBottom: 6,
+    paddingBottom: 8,
   },
   chipsRow: {
     flexGrow: 0,
-    height: 44,
+    height: 48,
   },
   chips: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 4,
+    paddingVertical: 6,
     gap: 8,
   },
   chip: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 18,
     backgroundColor: Colors.card,
     borderWidth: 1,
@@ -209,11 +190,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 16,
     gap: 8,
-    marginTop: 6,
+    marginTop: 8,
   },
   saleChip: {
     paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 8,
     backgroundColor: Colors.accentSoft,
   },
@@ -228,11 +209,20 @@ const styles = StyleSheet.create({
   saleChipTextActive: {
     color: Colors.white,
   },
+  countRow: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  countText: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    fontWeight: '600',
+  },
   gridRow: {
     gap: 12,
     paddingHorizontal: 16,
     marginBottom: 12,
-    marginTop: 22,
   },
   gridContent: {
     paddingBottom: 24,
