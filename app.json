@@ -14,7 +14,6 @@
     },
     "android": {
       "package": "com.minishop.app",
-      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -58,14 +57,6 @@
       ],
       "@react-native-community/datetimepicker",
       "expo-video",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/icon.png",
-          "color": "#FF5A1F",
-          "sounds": []
-        }
-      ],
       [
         "expo-location",
         {
