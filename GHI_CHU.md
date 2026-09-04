@@ -83,16 +83,51 @@ Seed tạo: sản phẩm giá cố định · đấu giá đang diễn ra (có l
 
 ---
 
-## 📤 PUBLIC LÊN EXPO.DEV (EAS)
+## 📤 CÁCH ĐẨY PROJECT LÊN EXPO.DEV (EAS) — HƯỚNG DẪN CHI TIẾT
 
+> **Mục đích:** tạo project trên expo.dev và đẩy app lên để mọi người dùng được qua **Expo Go** (OTA) hoặc build APK/AAB.
+> Trạng thái hiện tại: `eas-cli` **chưa cài**, `app.json` `extra.eas.projectId` đang là placeholder `THAY-THE-BANG-EAS-PROJECT-ID`.
+
+### Bước 0. Cài eas-cli (một lần)
 ```bash
 npm install -g eas-cli
-eas login
-eas init                 # gắn projectId thật vào app.json (thay placeholder)
-npm run eas:update       # OTA: ai có link là dùng được qua Expo Go
-npm run eas:build        # build APK/AAB (cài trực tiếp / lên store)
 ```
-EAS tự nạp biến `EXPO_PUBLIC_*` từ `.env` — không cần cấu hình thêm.
+Kiểm tra: `eas --version`
+
+### Bước 1. Đăng nhập tài khoản Expo
+```bash
+eas login
+```
+→ Nhập email/mật khẩu tài khoản **expo.dev** của bạn.
+(Nếu dùng CI/token: export token rồi `eas whoami` để kiểm tra.)
+
+### Bước 2. Tạo project trên expo.dev + gắn projectId (chạy 1 lần)
+```bash
+eas init
+```
+→ Tạo project Expo trên cloud và **tự điền** `projectId` thật vào `app.json`
+(thay placeholder `THAY-THE-BANG-EAS-PROJECT-ID`).
+> ⚠️ Lệnh này sẽ **ghi đổi file `app.json`** — kiểm tra lại sau khi chạy.
+
+### Bước 3. Đẩy bản cập nhật OTA (dùng qua Expo Go) — cách nhanh nhất
+```bash
+npm run eas:update        # = eas update --channel production
+```
+→ Kết quả in ra **link / QR**: ai mở bằng **Expo Go** là dùng được ngay, không cần build.
+> Các biến `EXPO_PUBLIC_*` trong `.env` được EAS **tự nạp** — không cần cấu hình thêm.
+
+### Bước 4 (tùy chọn). Build APK/AAB
+```bash
+npm run eas:build
+```
+- Chọn **preview** → nhận link tải APK cài trực tiếp.
+- Chọn **production** → build AAB đăng Google Play / App Store.
+- Sau khi cài APK, bản update tiếp theo vẫn dùng `npm run eas:update` (OTA).
+
+### Lưu ý khi build (không phải Expo Go)
+Firebase `AuthDomain` mặc định chỉ cho phép origin của Firebase. Khi chạy bản build
+(không phải Expo Go), vào **Firebase Console → Authentication → Settings → Authorized domains**
+để thêm domain của bản update (hoặc bỏ chọn giới hạn).
 
 ---
 
@@ -115,10 +150,11 @@ Firebase khoá cứng body email xác thực (chống spam) — sửa qua Consol
 5. App `.env`: `EXPO_PUBLIC_API_URL=http://<IP-máy>:4000` (điện thoại thật dùng IP LAN; để trống → fallback Firebase gửi email mặc định).
 
 ## ✅ ĐÃ HOÀN THÀNH
-Đăng ký (gửi email xác thực, có thể qua Brevo HTML) / đăng nhập / đăng xuất · Xác thực email bắt buộc trước khi vào app (màn hình verify-email, gửi lại email được) · Quên mật khẩu (gửi email đặt lại) · Trang chủ (tìm kiếm, danh mục, đấu giá, sản phẩm mới) · Chi tiết sản phẩm · Đăng bán (chọn ảnh → Cloudinary) · Sản phẩm của tôi (sửa/xoá/đã bán) · Giỏ hàng · Checkout COD · Đơn hàng (mua/bán, đổi trạng thái) · Đấu giá đầy đủ · Validation · Loading/Error/Empty · Security Rules · Seed demo.
+Đăng ký (gửi email xác thực, có thể qua Brevo HTML) / đăng nhập / đăng xuất · Xác thực email bắt buộc trước khi vào app (màn hình verify-email, gửi lại email được) · Quên mật khẩu (gửi email đặt lại) · Trang chủ (tìm kiếm, danh mục, đấu giá, sản phẩm mới) · Chi tiết sản phẩm · Đăng bán (chọn ảnh → Cloudinary) · Sản phẩm của tôi (sửa/xoá/đã bán) · Giỏ hàng · Checkout (COD + VietQR) · Đơn hàng (mua/bán, đổi trạng thái) · **Chat 1-1 + theo sản phẩm (real-time)** · **Đánh giá sản phẩm 1-5 sao (chỉ đơn completed)** · **Push notification local (tin nhắn mới, đơn đổi trạng thái, bị vượt giá)** · Đấu giá đầy đủ (bao gồm winner hạn 24h + chuyển quyền mua) · Validation · Loading/Error/Empty · Security Rules · Seed demo.
 
-## ⏳ CHƯA LÀM (ngoài phạm vi)
-Thanh toán online thật (chỉ COD) · Chat · Review · Push notification khi có lượt đấu mới.
+## ⏳ NGOÀI PHẠM VI (chưa làm)
+- Thanh toán online **thật**: chỉ thể hiện COD và **VietQR giả lập** (tạo ảnh QR, “Tôi đã chuyển khoản” để mô phỏng xác nhận thanh toán).
+- Push notification là **local** (trên thiết bị), chưa gửi **remote** push server→client.
 
 ## 🔧 LƯU Ý KHI GẶP LỖI
 - App báo "Chưa cấu hình Firebase/Cloudinary" → `.env` trống → điền key rồi khởi động lại `expo start`.

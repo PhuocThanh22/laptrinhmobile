@@ -16,7 +16,7 @@ import { AuctionCard } from '@/components/AuctionCard';
 import { Avatar } from '@/components/Avatar';
 import { CartButton } from '@/components/CartButton';
 import { CategoryChip } from '@/components/CategoryChip';
-import { HomeSkeleton } from '@/components/Skeleton';
+import { ProductGridSkeleton } from '@/components/Skeleton';
 import { ErrorState } from '@/components/ErrorState';
 import { ProductCard } from '@/components/ProductCard';
 import { Screen } from '@/components/Screen';
@@ -60,9 +60,9 @@ export default function HomeScreen() {
   const cardWidth = (width - 32 - 12) / 2;
 
   const auctions = products.filter(
-    (p) => p.saleType === 'auction' && (p.status === 'auction_active' || p.status === 'auction_ended'),
+    (p) => p.saleType === 'auction' && p.status === 'auction_active',
   );
-  const newProducts = products.filter((p) => p.status === 'active' || p.status === 'auction_active');
+  const newProducts = products.filter((p) => p.status !== 'sold');
 
   return (
     <Screen>
@@ -81,7 +81,7 @@ export default function HomeScreen() {
       </View>
 
       {loading ? (
-        <HomeSkeleton />
+        <ProductGridSkeleton count={4} />
       ) : error ? (
         <ErrorState message={error} onRetry={load} />
       ) : (
@@ -133,7 +133,7 @@ export default function HomeScreen() {
           )}
 
           {/* New products */}
-          <SectionHeader title="Sản phẩm mới" />
+          <SectionHeader title="Tất cả sản phẩm" />
           {newProducts.length ? (
             <View style={styles.grid}>
               {newProducts.map((product) => (

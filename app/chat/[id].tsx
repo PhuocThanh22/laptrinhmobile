@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { Avatar } from '@/components/Avatar';
@@ -69,7 +69,7 @@ export default function ChatDetailScreen() {
       await sendMessage(id, user.uid, input);
       setInput('');
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
     } finally {
       setSending(false);
     }

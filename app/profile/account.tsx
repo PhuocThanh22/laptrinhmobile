@@ -1,12 +1,13 @@
-import { Camera, Mail, Save } from 'lucide-react-native';
+import { Camera, LocateFixed, Mail, MapPin, Save } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
+import { LocationPicker } from '@/components/LocationPicker';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { Colors } from '@/constants/colors';
@@ -14,6 +15,7 @@ import { useAuth } from '@/context/AuthContext';
 import { uploadImages } from '@/services/cloudinaryService';
 import { getErrorMessage } from '@/utils/errors';
 import { formatDate } from '@/utils/format';
+import type { Location } from '@/types';
 
 import { safeBack } from '@/utils/navigation';
 export default function AccountScreen() {
@@ -21,13 +23,15 @@ export default function AccountScreen() {
   const [name, setName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
+  const [location, setLocation] = useState<Location | undefined>(user?.location);
+  const [pickerVisible, setPickerVisible] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const pickAvatar = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Toast.show({ type: 'error', text1: 'Cần quyền truy cập thư viện ảnh.' });
+      showMessage({ type: 'error', text1: 'Cần quyền truy cập thư viện ảnh.' });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -43,9 +47,9 @@ export default function AccountScreen() {
       const [url] = await uploadImages([result.assets[0].uri]);
       setAvatar(url);
       await updateProfile({ avatar: url });
-      Toast.show({ type: 'success', text1: 'Đã cập nhật ảnh đại diện.' });
+      showMessage({ type: 'success', text1: 'Đã cập nhật ảnh đại diện.' });
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
     } finally {
       setUploadingAvatar(false);
     }
@@ -53,16 +57,16 @@ export default function AccountScreen() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Toast.show({ type: 'error', text1: 'Vui lòng nhập họ tên.' });
+      showMessage({ type: 'error', text1: 'Vui lòng nhập họ tên.' });
       return;
     }
     setSaving(true);
     try {
-      await updateProfile({ name: name.trim(), phone: phone.trim() });
-      Toast.show({ type: 'success', text1: 'Đã lưu thông tin.' });
+      await updateProfile({ name: name.trim(), phone: phone.trim(), location });
+      showMessage({ type: 'success', text1: 'Đã lưu thông tin.' });
       safeBack();
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
     } finally {
       setSaving(false);
     }
@@ -73,8 +77,13 @@ export default function AccountScreen() {
       <AppHeader title="Thông tin tài khoản" onBack={safeBack} />
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets={true}
+        >
           {/* Avatar */}
           <View style={styles.avatarWrap}>
             <Avatar name={name} uri={avatar} size={88} />
@@ -111,11 +120,51 @@ export default function AccountScreen() {
             </Text>
           </View>
 
+          {/* Vị trí */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Vị trí của bạn</Text>
+            <Pressable style={styles.locationRow} onPress={() => setPickerVisible(true)}>
+              <View style={styles.locationIcon}>
+                <MapPin size={22} color={Colors.primary} />
+              </View>
+              <View style={styles.locationInfo}>
+                {location ? (
+                  <>
+                    <Text style={styles.locationAddress} numberOfLines={2}>
+                      {location.address}
+                    </Text>
+                    <Text style={styles.locationCoords}>
+                      {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={styles.locationEmpty}>
+                    Chưa cài đặt vị trí. Chạm để chọn trên bản đồ.
+                  </Text>
+                )}
+              </View>
+              <LocateFixed size={20} color={Colors.textMuted} />
+            </Pressable>
+            <Text style={styles.locationHint}>
+              Vị trí này sẽ hiển thị trên sản phẩm bạn đăng để người mua biết nơi giao dịch.
+            </Text>
+          </View>
+
           <Button
             title={saving ? 'Đang lưu...' : 'Lưu thông tin'}
             icon={Save}
             loading={saving}
             onPress={handleSave}
+          />
+
+          <LocationPicker
+            visible={pickerVisible}
+            initial={location}
+            onClose={() => setPickerVisible(false)}
+            onConfirm={(loc) => {
+              setLocation(loc);
+              setPickerVisible(false);
+            }}
           />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -174,5 +223,52 @@ const styles = StyleSheet.create({
   joined: {
     fontSize: 12,
     color: Colors.textMuted,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.text,
+    marginBottom: 10,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    padding: 12,
+    gap: 10,
+  },
+  locationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: Colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  locationInfo: {
+    flex: 1,
+  },
+  locationAddress: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  locationCoords: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    marginTop: 2,
+  },
+  locationEmpty: {
+    fontSize: 13,
+    color: Colors.textMuted,
+  },
+  locationHint: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    lineHeight: 16,
+    marginTop: 10,
   },
 });

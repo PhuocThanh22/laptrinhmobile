@@ -1,4 +1,4 @@
-import { Gavel, Timer } from 'lucide-react-native';
+import { Gavel, MapPin, Timer } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -36,7 +36,11 @@ export function AuctionCard({ product, width, onPress }: AuctionCardProps) {
           {formatCurrency(product.currentPrice ?? product.startingPrice)}
         </Text>
         <View style={styles.row}>
-          <Badge label="ĐẤU GIÁ" backgroundColor={Colors.accent} small />
+          <Badge
+            label={active ? 'ĐANG ĐẤU GIÁ' : 'KHÔNG CÒN ĐẤU GIÁ'}
+            backgroundColor={active ? Colors.accent : Colors.textMuted}
+            small
+          />
           <View style={styles.bidsRow}>
             <Gavel size={13} color={Colors.textMuted} />
             <Text style={styles.bidsText}>{product.bidsCount ?? 0} lượt</Text>
@@ -54,6 +58,14 @@ export function AuctionCard({ product, width, onPress }: AuctionCardProps) {
             <Text style={styles.endedText}>Chưa bắt đầu</Text>
           )}
         </View>
+        {product.sellerLocation?.address ? (
+          <View style={styles.locationRow}>
+            <MapPin size={12} color={Colors.textMuted} />
+            <Text style={styles.location} numberOfLines={1}>
+              {product.sellerLocation.address}
+            </Text>
+          </View>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -118,6 +130,17 @@ const styles = StyleSheet.create({
   endedText: {
     fontSize: 12,
     fontWeight: '700',
+    color: Colors.textMuted,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+  },
+  location: {
+    flex: 1,
+    fontSize: 11,
     color: Colors.textMuted,
   },
 });

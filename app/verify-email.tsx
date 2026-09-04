@@ -1,7 +1,7 @@
 import { LogOut, Mail, RotateCw, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
@@ -18,9 +18,9 @@ export default function VerifyEmailScreen() {
     setSending(true);
     try {
       await resendVerificationEmail();
-      Toast.show({ type: 'success', text1: 'Đã gửi lại email xác thực. Kiểm tra hộp thư của bạn.' });
+      showMessage({ type: 'success', text1: 'Đã gửi lại email xác thực. Kiểm tra hộp thư của bạn.' });
     } catch (e) {
-      Toast.show({ type: 'error', text1: e instanceof Error ? e.message : 'Gửi lại thất bại' });
+      showMessage({ type: 'error', text1: e instanceof Error ? e.message : 'Gửi lại thất bại' });
     } finally {
       setSending(false);
     }
@@ -31,12 +31,12 @@ export default function VerifyEmailScreen() {
     try {
       const verified = await refreshEmailVerified();
       if (verified) {
-        Toast.show({ type: 'success', text1: 'Xác thực email thành công!' });
+        showMessage({ type: 'success', text1: 'Xác thực email thành công!' });
       } else {
-        Toast.show({ type: 'info', text1: 'Email chưa được xác thực. Vui lòng bấm liên kết trong email.' });
+        showMessage({ type: 'info', text1: 'Email chưa được xác thực. Vui lòng bấm liên kết trong email.' });
       }
     } catch (e) {
-      Toast.show({ type: 'error', text1: e instanceof Error ? e.message : 'Kiểm tra thất bại' });
+      showMessage({ type: 'error', text1: e instanceof Error ? e.message : 'Kiểm tra thất bại' });
     } finally {
       setChecking(false);
     }

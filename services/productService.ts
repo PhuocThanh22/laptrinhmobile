@@ -21,7 +21,7 @@ import {
 } from 'firebase/firestore';
 
 import { requireFirebase } from './firebase';
-import { getUsersByIds } from './userService';
+import { getSingleUser, getUsersByIds } from './userService';
 import type { Bid, Product, SaleType } from '@/types';
 
 export interface NewProductInput {
@@ -82,6 +82,16 @@ export async function getProductsBySeller(sellerId: string): Promise<Product[]> 
 export async function createProduct(sellerId: string, input: NewProductInput): Promise<Product> {
   const { db } = requireFirebase();
   const now = Date.now();
+
+  // Lấy vị trí từ profile người bán (nếu có) để hiển thị trên sản phẩm.
+  let sellerLocation: Product['sellerLocation'];
+  try {
+    const user = await getSingleUser(sellerId);
+    sellerLocation = user?.location;
+  } catch {
+    sellerLocation = undefined;
+  }
+
   const base = {
     sellerId,
     name: input.name.trim(),
@@ -91,6 +101,7 @@ export async function createProduct(sellerId: string, input: NewProductInput): P
     video: input.video ?? null,
     condition: input.condition,
     saleType: input.saleType,
+    sellerLocation: sellerLocation ?? null,
     createdAt: now,
   };
 

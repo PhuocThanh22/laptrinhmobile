@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { Badge } from '@/components/Badge';
@@ -81,10 +81,10 @@ export default function MyProductsScreen() {
         onPress: async () => {
           try {
             await onConfirm();
-            Toast.show({ type: 'success', text1: 'Đã cập nhật.' });
+            showMessage({ type: 'success', text1: 'Đã cập nhật.' });
             load();
           } catch (e) {
-            Toast.show({ type: 'error', text1: getErrorMessage(e) });
+            showMessage({ type: 'error', text1: getErrorMessage(e) });
           }
         },
       },

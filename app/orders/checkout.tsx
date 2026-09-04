@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/Button';
@@ -17,6 +17,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { getProductById } from '@/services/productService';
 import { createOrder } from '@/services/orderService';
+import { buildVietQRUrl } from '@/services/paymentService';
 import { getErrorMessage } from '@/utils/errors';
 import { formatCurrency } from '@/utils/format';
 import { validateOrder } from '@/utils/validation';
@@ -84,16 +85,16 @@ export default function CheckoutScreen() {
 
   const handlePlaceOrder = async () => {
     if (!user) {
-      Toast.show({ type: 'error', text1: 'Vui lòng đăng nhập.' });
+      showMessage({ type: 'error', text1: 'Vui lòng đăng nhập.' });
       return;
     }
     const validation = validateOrder({ receiverName, phone, address });
     if (validation) {
-      Toast.show({ type: 'error', text1: validation });
+      showMessage({ type: 'error', text1: validation });
       return;
     }
     if (!orderItems.length) {
-      Toast.show({ type: 'error', text1: 'Đơn hàng trống.' });
+      showMessage({ type: 'error', text1: 'Đơn hàng trống.' });
       return;
     }
 
@@ -117,7 +118,7 @@ export default function CheckoutScreen() {
         );
       }
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
     } finally {
       setSubmitting(false);
     }
@@ -183,12 +184,31 @@ export default function CheckoutScreen() {
                   Quét mã QR {vietQRConfig.bankId} · {vietQRConfig.accountNo} · {formatCurrency(totalAmount)}
                 </Text>
               </View>
-              {paymentMethod === 'vietqr' ? (
+{paymentMethod === 'vietqr' ? (
                 <CircleDot size={22} color={Colors.primary} />
               ) : (
                 <Circle size={22} color={Colors.textMuted} />
               )}
             </Pressable>
+
+            {paymentMethod === 'vietqr' ? (
+              <View style={styles.qrPreviewCard}>
+                <Image
+                  source={{ uri: buildVietQRUrl(totalAmount, 'MINISHOP') }}
+                  style={styles.qrPreview}
+                  contentFit="contain"
+                />
+                <Text style={styles.qrPreviewTitle}>
+                  Chuyển khoản {formatCurrency(totalAmount)} đến
+                </Text>
+                <Text style={styles.qrPreviewAccount}>
+                  {vietQRConfig.bankId} · {vietQRConfig.accountNo}
+                </Text>
+                <Text style={styles.qrPreviewHint}>
+                  Mở app ngân hàng → Quét mã trên → Bấm &quot;Đặt hàng&quot; để xác nhận và thanh toán.
+                </Text>
+              </View>
+            ) : null}
 
             {/* Order summary */}
             <Text style={styles.sectionTitle}>Đơn hàng</Text>
@@ -269,10 +289,42 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.text,
   },
-  paymentDesc: {
+paymentDesc: {
     fontSize: 12,
     color: Colors.textMuted,
     marginTop: 2,
+  },
+  qrPreviewCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 6,
+  },
+  qrPreview: {
+    width: 220,
+    height: 220,
+    backgroundColor: Colors.card,
+  },
+  qrPreviewTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: Colors.text,
+    marginTop: 6,
+  },
+  qrPreviewAccount: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  qrPreviewHint: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 18,
   },
   orderItem: {
     flexDirection: 'row',

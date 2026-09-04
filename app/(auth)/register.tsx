@@ -1,5 +1,8 @@
 import { ChevronLeft, UserCheck, UserPlus } from 'lucide-react-native';
 import { Link } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+import { useCallback, useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -9,20 +12,21 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
-import { APP_NAME } from '@/constants/config';
+import { APP_NAME, googleWebClientId, isConfiguredForGoogle } from '@/constants/config';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/context/AuthContext';
 import { checkEmailExists } from '@/services/authService';
 import { validateEmail, validateRegister } from '@/utils/validation';
 
+WebBrowser.maybeCompleteAuthSession();
+
 export default function RegisterScreen() {
-  const { signUp } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -30,6 +34,29 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailTaken, setEmailTaken] = useState<string | null>(null);
+
+  const [googleRequest, googleResponse, googlePromptAsync] = Google.useIdTokenAuthRequest({
+    clientId: googleWebClientId,
+  });
+
+  const handleGoogleSignIn = useCallback(async (idToken: string) => {
+    setLoading(true);
+    try {
+      await signInWithGoogle(idToken);
+      showMessage({ type: 'success', text1: 'Đăng nhập bằng Google thành công' });
+    } catch (e) {
+      showMessage({ type: 'error', text1: e instanceof Error ? e.message : 'Đăng nhập Google thất bại' });
+    } finally {
+      setLoading(false);
+    }
+  }, [signInWithGoogle]);
+
+  useEffect(() => {
+    if (googleResponse?.type === 'success') {
+      const { id_token } = googleResponse.params;
+      handleGoogleSignIn(id_token);
+    }
+  }, [googleResponse, handleGoogleSignIn]);
 
   const handleCheckEmail = async () => {
     if (!email.trim() || !validateEmail(email)) {
@@ -42,7 +69,6 @@ export default function RegisterScreen() {
         exists ? 'Email này đã được đăng ký. Bạn có thể đăng nhập hoặc dùng email khác.' : null,
       );
     } catch {
-      // Không kiểm tra được (ví dụ chưa cấu hình Firebase) — bỏ qua, submit vẫn báo lỗi từ Firebase.
       setEmailTaken(null);
     }
   };
@@ -50,15 +76,15 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     const error = validateRegister({ name, email, password, confirmPassword });
     if (error) {
-      Toast.show({ type: 'error', text1: error });
+      showMessage({ type: 'error', text1: error });
       return;
     }
     setLoading(true);
     try {
       await signUp({ name, email, password, phone });
-      Toast.show({ type: 'success', text1: 'Đăng ký thành công', text2: 'Vui lòng xác thực email để tiếp tục.' });
+      showMessage({ type: 'success', text1: 'Đăng ký thành công', text2: 'Vui lòng xác thực email để tiếp tục.' });
     } catch (e) {
-      Toast.show({ type: 'error', text1: e instanceof Error ? e.message : 'Đăng ký thất bại' });
+      showMessage({ type: 'error', text1: e instanceof Error ? e.message : 'Đăng ký thất bại' });
     } finally {
       setLoading(false);
     }
@@ -130,6 +156,23 @@ export default function RegisterScreen() {
             />
           </View>
 
+          {isConfiguredForGoogle && (
+            <>
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>hoặc</Text>
+                <View style={styles.dividerLine} />
+              </View>
+              <Button
+                title="Đăng nhập bằng Google"
+                onPress={() => googlePromptAsync()}
+                loading={loading}
+                disabled={!googleRequest}
+                style={styles.googleButton}
+              />
+            </>
+          )}
+
           <View style={styles.footer}>
             <Text style={styles.footerText}>Đã có tài khoản? </Text>
             <Link href="/(auth)/login" style={styles.footerLink}>
@@ -195,6 +238,26 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 8,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    fontSize: 13,
+    color: Colors.textMuted,
+  },
+  googleButton: {
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   footer: {
     flexDirection: 'row',

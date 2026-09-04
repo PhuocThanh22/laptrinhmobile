@@ -17,6 +17,7 @@ import {
   logoutUser,
   reloadUserEmailVerified,
   sendVerificationEmail,
+  signInWithGoogleIdToken,
   updateUserProfile,
 } from '@/services/authService';
 import { getFirebaseErrorMessage } from '@/utils/errors';
@@ -27,6 +28,7 @@ interface AuthContextValue {
   emailVerified: boolean;
   initializing: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: (idToken: string) => Promise<void>;
   signUp: (input: { name: string; email: string; password: string; phone?: string }) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -85,6 +87,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (email: string, password: string) => {
     try {
       const profile = await loginUser(email, password);
+      setUser(profile);
+    } catch (e) {
+      throw new Error(getFirebaseErrorMessage(e));
+    }
+  }, []);
+
+  const signInWithGoogle = useCallback(async (idToken: string) => {
+    try {
+      const profile = await signInWithGoogleIdToken(idToken);
       setUser(profile);
     } catch (e) {
       throw new Error(getFirebaseErrorMessage(e));
@@ -157,6 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       emailVerified,
       initializing,
       signIn,
+      signInWithGoogle,
       signUp,
       signOut,
       refreshUser,
@@ -169,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       emailVerified,
       initializing,
       signIn,
+      signInWithGoogle,
       signUp,
       signOut,
       refreshUser,

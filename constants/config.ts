@@ -46,9 +46,14 @@ export const isCloudinaryConfigured = Boolean(
   cloudinaryConfig.cloudName && cloudinaryConfig.uploadPreset,
 );
 
+/** Google Sign-In: Web Client ID từ Google Cloud Console (OAuth Web client). */
+export const googleWebClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '';
+export const googleIosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '';
+export const isConfiguredForGoogle = Boolean(googleWebClientId);
+
 export const vietQRConfig = {
-  bankId: process.env.EXPO_PUBLIC_VIETQR_BANK_ID ?? 'MB',
-  accountNo: process.env.EXPO_PUBLIC_VIETQR_ACCOUNT_NO ?? '0123456789',
+  bankId: process.env.EXPO_PUBLIC_VIETQR_BANK_ID ?? 'BIDV',
+  accountNo: process.env.EXPO_PUBLIC_VIETQR_ACCOUNT_NO ?? '6910853557',
   accountName: process.env.EXPO_PUBLIC_VIETQR_ACCOUNT_NAME ?? 'MINISHOP',
   template: process.env.EXPO_PUBLIC_VIETQR_TEMPLATE ?? 'compact2',
 };

@@ -18,6 +18,31 @@ import { cloudinaryConfig, isCloudinaryConfigured } from '@/constants/config';
 
 const BASE_URL = 'https://api.cloudinary.com/v1_1';
 
+/**
+ * Đọc body của response và parse JSON an toàn.
+ *
+ * Một số trường hợp (mạng chậm/timeout, Cloudinary trả trang lỗi HTML,
+ * định tuyến trả body rỗng...) khiến `response.json()` ném lỗi "Unexpected
+ * token ... in JSON" — lỗi khó hiểu với người dùng. Hàm này đọc text trước
+ * và ném thông báo tiếng Việt rõ ràng.
+ */
+async function parseJsonResponse(response: Response, action: string): Promise<Record<string, unknown>> {
+  let text = '';
+  try {
+    text = await response.text();
+  } catch {
+    throw new Error(`Không đọc được phản hồi khi ${action} lên Cloudinary. Kiểm tra kết nối mạng.`);
+  }
+  if (!text) {
+    throw new Error(`Cloudinary không trả kết quả khi ${action}. Vui lòng thử lại.`);
+  }
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    throw new Error(`Lỗi phản hồi từ Cloudinary khi ${action} (mã ${response.status}). Vui lòng thử lại.`);
+  }
+}
+
 async function uploadOne(uri: string): Promise<string> {
   if (!isCloudinaryConfigured) {
     throw new Error(
@@ -42,10 +67,11 @@ async function uploadOne(uri: string): Promise<string> {
   formData.append('upload_preset', uploadPreset);
 
   const response = await fetch(url, { method: 'POST', body: formData });
-  const json = await response.json();
+  const json = await parseJsonResponse(response, 'upload ảnh');
 
   if (!response.ok || !json.secure_url) {
-    throw new Error(json?.error?.message ?? 'Upload ảnh lên Cloudinary thất bại.');
+    const err = (json.error as { message?: string } | undefined)?.message;
+    throw new Error(err ?? 'Upload ảnh lên Cloudinary thất bại.');
   }
   return json.secure_url as string;
 }
@@ -83,10 +109,11 @@ async function uploadVideoOne(uri: string): Promise<string> {
   formData.append('upload_preset', uploadPreset);
 
   const response = await fetch(url, { method: 'POST', body: formData });
-  const json = await response.json();
+  const json = await parseJsonResponse(response, 'upload video');
 
   if (!response.ok || !json.secure_url) {
-    throw new Error(json?.error?.message ?? 'Upload video lên Cloudinary thất bại.');
+    const err = (json.error as { message?: string } | undefined)?.message;
+    throw new Error(err ?? 'Upload video lên Cloudinary thất bại.');
   }
   return json.secure_url as string;
 }

@@ -35,7 +35,9 @@ service cloud.firestore {
 
       // Sửa: chỉ sửa các trường cá nhân của mình, KHÔNG đổi email/createdAt.
       allow update: if isOwner(userId)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'avatar'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name', 'phone', 'avatar', 'location'
+        ])
         && (!('name' in request.resource.data) || request.resource.data.name.size() > 0);
 
       // Không cho xoá tài khoản.
@@ -188,10 +190,14 @@ service cloud.firestore {
     // carts — giỏ hàng (chỉ chủ sở hữu)
     // ============================================================
     match /carts/{userId} {
-      allow read, create: if isOwner(userId)
+      // Đọc: chỉ chủ sở hữu. KHÔNG được dùng request.resource ở đây
+      // (request.resource chỉ tồn tại với create/update/delete).
+      allow read: if isOwner(userId);
+
+      // Tạo: chỉ chủ tài khoản.
+      allow create: if isOwner(userId)
         && request.resource.data.userId == request.auth.uid
         && isValidList(request.resource.data.items)
-        && request.resource.data.items.size() >= 0
         && request.resource.data.updatedAt >= request.time.toMillis() - 60000
         && request.resource.data.updatedAt <= request.time.toMillis() + 60000;
 
@@ -237,6 +243,7 @@ service cloud.firestore {
         && request.resource.data.createdAt <= request.time.toMillis() + 60000;
 
       // Cập nhật: (A) người bán đổi status, (B) người mua cập nhật paymentStatus VietQR
+      // + (C) người mua xác nhận đã nhận hàng (chỉ từ 'shipping' -> 'completed')
       allow update: if signedIn() && (
         // (A) Người bán đổi trạng thái đơn
         (request.auth.uid in resource.data.sellerIds
@@ -249,6 +256,13 @@ service cloud.firestore {
           && request.resource.data.buyerId == resource.data.buyerId
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus', 'paidAt'])
           && request.resource.data.paymentStatus in ['pending', 'paid', 'failed', 'expired'])
+        ||
+        // (C) Người mua xác nhận đã nhận hàng
+        (request.auth.uid == resource.data.buyerId
+          && resource.data.status == 'shipping'
+          && request.resource.data.status == 'completed'
+          && request.resource.data.buyerId == resource.data.buyerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
       );
 
       // Không cho xoá đơn hàng.

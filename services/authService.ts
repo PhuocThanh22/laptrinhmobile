@@ -5,10 +5,12 @@
 import {
   createUserWithEmailAndPassword,
   fetchSignInMethodsForEmail,
+  GoogleAuthProvider,
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  signInWithCredential,
   signOut,
   type User,
 } from 'firebase/auth';
@@ -159,6 +161,47 @@ export async function getUserProfile(uid: string): Promise<AppUser | null> {
 export async function updateUserProfile(uid: string, data: Partial<AppUser>): Promise<void> {
   const { db } = requireFirebase();
   await setDoc(doc(db, 'users', uid), data, { merge: true });
+}
+
+/** Đăng nhập bằng Google ID token (nhận từ expo-auth-session). */
+export async function signInWithGoogleIdToken(idToken: string): Promise<AppUser> {
+  const { auth, db } = requireFirebase();
+  const credential = GoogleAuthProvider.credential(idToken);
+  const result = await signInWithCredential(auth, credential);
+  const fbUser = result.user;
+
+  // Kiểm tra profile đã tồn tại chưa
+  const existing = await getUserProfile(fbUser.uid);
+  if (existing) return existing;
+
+  // Tạo profile mới từ thông tin Google
+  const user: AppUser = {
+    uid: fbUser.uid,
+    name: fbUser.displayName ?? '',
+    email: fbUser.email ?? '',
+    phone: fbUser.phoneNumber ?? '',
+    avatar: fbUser.photoURL ?? '',
+    createdAt: Date.now(),
+  };
+
+  await setDoc(doc(db, 'users', fbUser.uid), {
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    avatar: user.avatar,
+    createdAt: user.createdAt,
+  });
+
+  // Google đã xác thực email rồi
+  if (!fbUser.emailVerified) {
+    try {
+      await sendEmailVerification(fbUser);
+    } catch {
+      // bỏ qua
+    }
+  }
+
+  return user;
 }
 
 /** Lắng nghe thay đổi trạng thái đăng nhập. */

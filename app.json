@@ -7,13 +7,14 @@
     "icon": "./assets/images/icon.png",
     "scheme": "minishop",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.minishop.app"
     },
     "android": {
       "package": "com.minishop.app",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -21,10 +22,18 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -56,16 +65,28 @@
           "color": "#FF5A1F",
           "sounds": []
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MiniShop cần vị trí để hiển thị địa chỉ người bán và chọn vị trí của bạn trên bản đồ."
+        }
       ]
     ],
     "extra": {
       "eas": {
-        "projectId": "THAY-THE-BANG-EAS-PROJECT-ID"
+        "projectId": "742c85af-2406-4cd5-8c2e-600b629dd96b"
       }
     },
     "experiments": {
       "typedRoutes": false,
       "reactCompiler": true
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/742c85af-2406-4cd5-8c2e-600b629dd96b"
     }
   }
 }

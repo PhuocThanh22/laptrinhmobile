@@ -1,9 +1,9 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LogBox } from 'react-native';
-import Toast from 'react-native-toast-message';
 
 import { LoadingFullScreen } from '@/components/Loading';
+import { MessageCenter } from '@/components/MessageCenter';
 import { Colors } from '@/constants/colors';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
@@ -69,7 +69,7 @@ export default function RootLayout() {
       <CartProvider>
         <RootNavigator />
         <StatusBar style="dark" />
-        <Toast />
+        <MessageCenter />
       </CartProvider>
     </AuthProvider>
   );

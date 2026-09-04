@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { Badge } from '@/components/Badge';
@@ -81,7 +81,7 @@ export default function MyOrdersScreen() {
     load();
   }, [load]);
 
-  const handleStatusChange = (order: Order, status: OrderStatus) => {
+const handleStatusChange = (order: Order, status: OrderStatus) => {
     Alert.alert('Cập nhật đơn hàng', `Chuyển trạng thái sang "${ORDER_STATUS_LABELS[status]}"?`, [
       { text: 'Huỷ', style: 'cancel' },
       {
@@ -89,10 +89,28 @@ export default function MyOrdersScreen() {
         onPress: async () => {
           try {
             await updateOrderStatus(order.id, status);
-            Toast.show({ type: 'success', text1: 'Đã cập nhật trạng thái.' });
+            showMessage({ type: 'success', text1: 'Đã cập nhật trạng thái.' });
             load();
           } catch (e) {
-            Toast.show({ type: 'error', text1: getErrorMessage(e) });
+            showMessage({ type: 'error', text1: getErrorMessage(e) });
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleReceive = (order: Order) => {
+    Alert.alert('Đã nhận hàng', 'Xác nhận bạn đã nhận được hàng để hoàn thành đơn?', [
+      { text: 'Huỷ', style: 'cancel' },
+      {
+        text: 'Xác nhận',
+        onPress: async () => {
+          try {
+            await updateOrderStatus(order.id, 'completed');
+            showMessage({ type: 'success', text1: 'Đã nhận hàng, đơn hoàn thành.' });
+            load();
+          } catch (e) {
+            showMessage({ type: 'error', text1: getErrorMessage(e) });
           }
         },
       },
@@ -127,8 +145,8 @@ export default function MyOrdersScreen() {
               message={tab === 'buy' ? 'Bạn chưa đặt đơn hàng nào.' : 'Chưa có ai đặt hàng sản phẩm của bạn.'}
             />
           }
-          renderItem={({ item }) => (
-            <View style={styles.card}>
+renderItem={({ item }) => (
+            <Pressable style={styles.card} onPress={() => router.push(`/orders/${item.id}`)}>
               <View style={styles.cardHeader}>
                 <Text style={styles.orderId}>#{item.id.slice(0, 8)}</Text>
                 <Badge
@@ -155,11 +173,10 @@ export default function MyOrdersScreen() {
                 const key = `${item.id}_${it.productId}`;
                 const already = reviewedKeys.has(key);
                 const canReview = tab === 'buy' && item.status === 'completed' && !already;
-                return (
-                  <Pressable
+return (
+                  <View
                     key={`${it.productId}-${i}`}
-                    style={styles.item}
-                    onPress={() => router.push(`/product/${it.productId}`)}>
+                    style={styles.item}>
                     <Image source={{ uri: it.image }} style={styles.itemImage} contentFit="cover" />
                     <View style={styles.itemInfo}>
                       <Text style={styles.itemName} numberOfLines={1}>{it.name}</Text>
@@ -176,7 +193,7 @@ export default function MyOrdersScreen() {
                         </Pressable>
                       ) : null}
                     </View>
-                  </Pressable>
+                  </View>
                 );
               })}
 
@@ -201,7 +218,7 @@ export default function MyOrdersScreen() {
                     try {
                       const otherId = tab === 'buy' ? item.sellerIds[0] : item.buyerId;
                       if (!otherId || otherId === user.uid) {
-                        Toast.show({ type: 'error', text1: 'Không thể nhắn với chính mình.' });
+                        showMessage({ type: 'error', text1: 'Không thể nhắn với chính mình.' });
                         return;
                       }
                       const convId = await getOrCreateConversation({
@@ -213,20 +230,23 @@ export default function MyOrdersScreen() {
                       });
                       router.push(`/chat/${convId}`);
                     } catch (e) {
-                      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+                      showMessage({ type: 'error', text1: getErrorMessage(e) });
                     }
                   }}
                 />
+{tab === 'buy' && item.status === 'shipping' ? (
+                  <Button title="Đã nhận hàng" onPress={() => handleReceive(item)} />
+                ) : null}
                 {tab === 'sell' && item.status !== 'completed' && item.status !== 'cancelled'
                   ? SELLER_ACTIONS.filter((a) => a.status === item.status).map((a) => (
                       <Button key={a.status} title={a.label} small onPress={() => handleStatusChange(item, a.next)} />
                     ))
                   : null}
-                {tab === 'sell' && item.status !== 'completed' && item.status !== 'cancelled' ? (
+{tab === 'sell' && item.status !== 'completed' && item.status !== 'cancelled' ? (
                   <Button title="Huỷ đơn" variant="ghost" small onPress={() => handleStatusChange(item, 'cancelled')} />
                 ) : null}
               </View>
-            </View>
+            </Pressable>
           )}
         />
       )}

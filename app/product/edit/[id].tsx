@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { ErrorState } from '@/components/ErrorState';
@@ -83,7 +83,7 @@ export default function EditProductScreen() {
   const handleSubmit = async (input: Parameters<typeof updateProduct>[1]) => {
     try {
       await updateProduct(product.id, input);
-      Toast.show({ type: 'success', text1: 'Đã cập nhật sản phẩm.' });
+      showMessage({ type: 'success', text1: 'Đã cập nhật sản phẩm.' });
       safeBack();
     } catch (e) {
       throw new Error(getErrorMessage(e));

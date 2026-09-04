@@ -50,3 +50,7 @@ app-example
 # generated native folders
 /ios
 /android
+
+# firebase google config (chứa key, không đẩy lên git)
+google-services.json
+GoogleService-Info.plist

@@ -11,7 +11,7 @@ import {
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { Avatar } from '@/components/Avatar';
 import { Screen } from '@/components/Screen';
@@ -61,9 +61,9 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     try {
       await signOut();
-      Toast.show({ type: 'success', text1: 'Đã đăng xuất' });
+      showMessage({ type: 'success', text1: 'Đã đăng xuất' });
     } catch (e) {
-      Toast.show({ type: 'error', text1: e instanceof Error ? e.message : 'Đăng xuất thất bại' });
+      showMessage({ type: 'error', text1: e instanceof Error ? e.message : 'Đăng xuất thất bại' });
     }
   };
 

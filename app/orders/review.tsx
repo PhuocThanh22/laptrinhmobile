@@ -2,7 +2,7 @@ import { Star } from 'lucide-react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/Button';
@@ -38,10 +38,10 @@ export default function ReviewScreen() {
     setSubmitting(true);
     try {
       await createReview({ productId, orderId, reviewerId: user.uid, rating, comment });
-      Toast.show({ type: 'success', text1: 'Cảm ơn bạn đã đánh giá!' });
+      showMessage({ type: 'success', text1: 'Cảm ơn bạn đã đánh giá!' });
       safeBack();
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
     } finally {
       setSubmitting(false);
     }

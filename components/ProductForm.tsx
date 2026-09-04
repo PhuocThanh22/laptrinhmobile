@@ -1,10 +1,11 @@
 import { Check, ImagePlus, Video, X } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { Button } from './Button';
 import { DateTimeField } from './DateTimeField';
@@ -83,7 +84,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
   const pickImages = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Toast.show({ type: 'error', text1: 'Cần quyền truy cập thư viện ảnh' });
+      showMessage({ type: 'error', text1: 'Cần quyền truy cập thư viện ảnh' });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -92,10 +93,22 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
       quality: 0.8,
       selectionLimit: 5 - images.length,
     });
-    if (!result.canceled) {
-      const newItems = result.assets.map((a) => ({ uri: a.uri, isRemote: false }));
-      setImages((prev) => [...prev, ...newItems].slice(0, 5));
+    if (result.canceled) return;
+    const newItems: ImageItem[] = [];
+    for (const a of result.assets) {
+      try {
+        // Nén + giảm kích thước để không vượt giới hạn dung lượng lên Cloudinary (10MB).
+        const resized = await manipulateAsync(
+          a.uri,
+          [{ resize: { width: 1280 } }],
+          { compress: 0.7, format: SaveFormat.JPEG },
+        );
+        newItems.push({ uri: resized.uri, isRemote: false });
+      } catch {
+        newItems.push({ uri: a.uri, isRemote: false });
+      }
     }
+    setImages((prev) => [...prev, ...newItems].slice(0, 5));
   };
 
   const removeImage = (index: number) => {
@@ -105,7 +118,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
   const pickVideo = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Toast.show({ type: 'error', text1: 'Cần quyền truy cập thư viện ảnh' });
+      showMessage({ type: 'error', text1: 'Cần quyền truy cập thư viện ảnh' });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -136,7 +149,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
       endTime,
     });
     if (validation) {
-      Toast.show({ type: 'error', text1: validation });
+      showMessage({ type: 'error', text1: validation });
       return;
     }
 
@@ -179,13 +192,16 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
 
       await onSubmit(input);
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
@@ -356,10 +372,14 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
       />
       <View style={styles.bottomSpace} />
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   content: {
     padding: 16,
   },

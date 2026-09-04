@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useState } from 'react';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
@@ -27,29 +27,29 @@ export default function ForgotPasswordScreen() {
 
   const handleReset = async () => {
     if (!email.trim()) {
-      Toast.show({ type: 'error', text1: 'Vui lòng nhập email.' });
+      showMessage({ type: 'error', text1: 'Vui lòng nhập email.' });
       return;
     }
     if (!validateEmail(email)) {
-      Toast.show({ type: 'error', text1: 'Email không hợp lệ.' });
+      showMessage({ type: 'error', text1: 'Email không hợp lệ.' });
       return;
     }
     setLoading(true);
     try {
       const exists = await checkEmailExists(email);
       if (!exists) {
-        Toast.show({ type: 'error', text1: 'Email này chưa có tài khoản.' });
+        showMessage({ type: 'error', text1: 'Email này chưa có tài khoản.' });
         return;
       }
       await resetPassword(email);
-      Toast.show({
+      showMessage({
         type: 'success',
         text1: 'Đã gửi email đặt lại mật khẩu',
         text2: 'Kiểm tra hộp thư và làm theo hướng dẫn.',
       });
       setTimeout(() => router.replace('/(auth)/login'), 600);
     } catch (e) {
-      Toast.show({ type: 'error', text1: getFirebaseErrorMessage(e) });
+      showMessage({ type: 'error', text1: getFirebaseErrorMessage(e) });
     } finally {
       setLoading(false);
     }

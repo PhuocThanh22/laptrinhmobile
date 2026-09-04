@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/Button';
@@ -32,7 +32,7 @@ export default function VietQRPaymentScreen() {
     if (!orderId) return;
     getOrderById(orderId)
       .then(setOrder)
-      .catch((e) => Toast.show({ type: 'error', text1: getErrorMessage(e) }))
+      .catch((e) => showMessage({ type: 'error', text1: getErrorMessage(e) }))
       .finally(() => setLoading(false));
   }, [orderId]);
 
@@ -78,7 +78,7 @@ export default function VietQRPaymentScreen() {
 
   const handleConfirm = async () => {
     if (isExpired) {
-      Toast.show({ type: 'error', text1: 'QR đã hết hạn (15 phút). Vui lòng tạo lại đơn.' });
+      showMessage({ type: 'error', text1: 'QR đã hết hạn (15 phút). Vui lòng tạo lại đơn.' });
       return;
     }
     setConfirming(true);
@@ -86,10 +86,10 @@ export default function VietQRPaymentScreen() {
       // giả lập kiểm tra: delay 1.5s
       await new Promise((r) => setTimeout(r, 1500));
       await confirmVietQRPayment(order.id);
-      Toast.show({ type: 'success', text1: 'Thanh toán thành công!' });
+      showMessage({ type: 'success', text1: 'Thanh toán thành công!' });
       router.replace(`/orders/success?orderId=${order.id}&total=${order.totalAmount}&count=${order.items.length}`);
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
     } finally {
       setConfirming(false);
     }
@@ -100,13 +100,13 @@ export default function VietQRPaymentScreen() {
     try {
       const fresh = await getOrderById(order.id);
       if (fresh?.paymentStatus === 'paid') {
-        Toast.show({ type: 'success', text1: 'Đơn đã được thanh toán!' });
+        showMessage({ type: 'success', text1: 'Đơn đã được thanh toán!' });
         router.replace(`/orders/success?orderId=${fresh.id}&total=${fresh.totalAmount}&count=${fresh.items.length}`);
       } else {
-        Toast.show({ type: 'info', text1: 'Chưa ghi nhận thanh toán. Vui lòng thử lại sau.' });
+        showMessage({ type: 'info', text1: 'Chưa ghi nhận thanh toán. Vui lòng thử lại sau.' });
       }
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
     } finally {
       setChecking(false);
     }

@@ -1,4 +1,4 @@
-import { Timer } from 'lucide-react-native';
+import { MapPin, Timer } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
@@ -40,8 +40,8 @@ export function ProductCard({ product, width, onPress, style }: ProductCardProps
         />
         <View style={styles.topRow}>
           <Badge
-            label={isAuction ? 'ĐẤU GIÁ' : 'BÁN'}
-            backgroundColor={isAuction ? Colors.accent : Colors.primary}
+            label={isAuction ? (active ? 'ĐANG ĐẤU GIÁ' : 'KHÔNG CÒN ĐẤU GIÁ') : 'BÁN'}
+            backgroundColor={isAuction ? (active ? Colors.accent : Colors.textMuted) : Colors.primary}
             small
           />
         </View>
@@ -65,6 +65,14 @@ export function ProductCard({ product, width, onPress, style }: ProductCardProps
         <Text style={styles.seller} numberOfLines={1}>
           {product.sellerName}
         </Text>
+        {product.sellerLocation?.address ? (
+          <View style={styles.locationRow}>
+            <MapPin size={11} color={Colors.textMuted} />
+            <Text style={styles.location} numberOfLines={1}>
+              {product.sellerLocation.address}
+            </Text>
+          </View>
+        ) : null}
         {isAuction && active && product.endTime ? (
           <View style={styles.timeRow}>
             <Timer size={13} color={Colors.accent} />
@@ -138,6 +146,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textMuted,
     marginTop: 2,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 2,
+  },
+  location: {
+    flex: 1,
+    fontSize: 11,
+    color: Colors.textMuted,
   },
   timeRow: {
     flexDirection: 'row',

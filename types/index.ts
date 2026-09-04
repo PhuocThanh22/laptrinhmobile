@@ -42,6 +42,8 @@ export interface Product {
 
   status: ProductStatus;
   createdAt: number; // epoch ms
+  /** Vị trí người bán, copy từ profile khi đăng bán. */
+  sellerLocation?: Location;
 }
 
 export interface Bid {
@@ -97,12 +99,20 @@ export interface Order {
   paidAt?: number | null;
 }
 
+/** Vị trí địa lý (tọa độ + địa chỉ text). */
+export interface Location {
+  latitude: number;
+  longitude: number;
+  address: string;
+}
+
 export interface AppUser {
   uid: string;
   name: string;
   email: string;
   phone?: string;
   avatar?: string;
+  location?: Location;
   createdAt: number; // epoch ms
 }
 

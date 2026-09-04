@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { ProductForm } from '@/components/ProductForm';
 import { Screen } from '@/components/Screen';
@@ -12,16 +13,19 @@ import { getErrorMessage } from '@/utils/errors';
 
 export default function SellScreen() {
   const { user } = useAuth();
+  const [formKey, setFormKey] = useState(0);
 
   const handleSubmit = async (input: Parameters<typeof createProduct>[1]) => {
     if (!user) {
-      Toast.show({ type: 'error', text1: 'Vui lòng đăng nhập để đăng bán.' });
+      showMessage({ type: 'error', text1: 'Vui lòng đăng nhập để đăng bán.' });
       return;
     }
     try {
       const product = await createProduct(user.uid, input);
-      Toast.show({ type: 'success', text1: 'Đăng sản phẩm thành công!' });
-      router.replace(`/product/${product.id}`);
+      showMessage({ type: 'success', text1: 'Đăng sản phẩm thành công!' });
+      setFormKey((k) => k + 1);
+      router.navigate('/');
+      router.push(`/product/${product.id}`);
     } catch (e) {
       throw new Error(getErrorMessage(e));
     }
@@ -36,7 +40,7 @@ export default function SellScreen() {
         </View>
         <CartButton size={40} />
       </View>
-      <ProductForm submitLabel="Đăng bán" onSubmit={handleSubmit} />
+      <ProductForm key={formKey} submitLabel="Đăng bán" onSubmit={handleSubmit} />
     </Screen>
   );
 }

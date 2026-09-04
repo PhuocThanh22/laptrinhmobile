@@ -86,7 +86,10 @@ export function OrderCardSkeleton({ rows = 3 }: { rows?: number }) {
       <View style={styles.list}>
         {Array.from({ length: rows }).map((_, i) => (
           <View key={i} style={styles.orderCard}>
-            <SkeletonBlock style={{ width: '35%', height: 14 }} />
+            <View style={styles.orderHeader}>
+              <SkeletonBlock style={{ width: '35%', height: 14 }} />
+              <SkeletonBlock style={{ width: 64, height: 20, borderRadius: 10 }} />
+            </View>
             <SkeletonBlock style={{ width: '25%', height: 11, marginTop: 6 }} />
             <View style={styles.orderItemRow}>
               <SkeletonBlock style={{ width: 46, height: 46, borderRadius: 10 }} />
@@ -120,47 +123,6 @@ export function DetailSkeleton() {
         <SkeletonBlock style={[styles.line, { width: '92%' }]} />
         <SkeletonBlock style={[styles.lineShort, { width: '85%' }]} />
         <SkeletonBlock style={{ height: 50, borderRadius: 14, marginTop: 24 }} />
-      </View>
-    </Skeleton>
-  );
-}
-
-/** Skeleton trang chủ: thanh tìm kiếm + danh mục + đấu giá + lưới sản phẩm. */
-export function HomeSkeleton() {
-  const { width } = useWindowDimensions();
-  const cardWidth = (width - 32 - 12) / 2;
-
-  return (
-    <Skeleton style={styles.flex}>
-      <View style={styles.homeBody}>
-        <SkeletonBlock style={styles.searchPill} />
-        <View style={styles.sectionTitle}>
-          <SkeletonBlock style={{ width: 100, height: 17 }} />
-        </View>
-        <View style={styles.chipsRow}>
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <SkeletonBlock key={i} style={styles.chip} />
-          ))}
-        </View>
-        <View style={styles.sectionTitle}>
-          <SkeletonBlock style={{ width: 140, height: 17 }} />
-        </View>
-        <SkeletonBlock style={{ width: width - 64, height: 114, borderRadius: 16, marginLeft: 6 }} />
-        <View style={styles.sectionTitle}>
-          <SkeletonBlock style={{ width: 130, height: 17 }} />
-        </View>
-        <View style={styles.grid}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <View key={i} style={[styles.productCard, { width: cardWidth }]}>
-              <SkeletonBlock style={styles.squareImage} />
-              <View style={styles.cardBody}>
-                <SkeletonBlock style={styles.lineSmall} />
-                <SkeletonBlock style={[styles.line, { marginTop: 8 }]} />
-                <SkeletonBlock style={[styles.lineShort, { marginTop: 6 }]} />
-              </View>
-            </View>
-          ))}
-        </View>
       </View>
     </Skeleton>
   );
@@ -231,6 +193,11 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
   },
+  orderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   orderItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -252,29 +219,5 @@ const styles = StyleSheet.create({
   },
   detailBody: {
     padding: 16,
-  },
-  homeBody: {
-    paddingHorizontal: 16,
-  },
-  searchPill: {
-    height: 44,
-    borderRadius: 22,
-    marginTop: 4,
-  },
-  sectionTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 18,
-    marginBottom: 10,
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingVertical: 4,
-  },
-  chip: {
-    width: 72,
-    height: 34,
-    borderRadius: 17,
   },
 });

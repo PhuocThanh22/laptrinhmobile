@@ -59,7 +59,7 @@ function Loader({ text }: { text?: string }) {
       <View style={styles.stage}>
         <Animated.View style={[styles.ring, ringStyle]} />
         <Animated.View style={[styles.logo, logoStyle]}>
-          <ShoppingBag size={30} color={Colors.white} />
+          <ShoppingBag size={24} color={Colors.white} />
         </Animated.View>
       </View>
       <View style={styles.dots}>
@@ -143,9 +143,9 @@ const styles = StyleSheet.create({
     borderRightColor: Colors.primarySoft,
   },
   logo: {
-    width: 54,
-    height: 54,
-    borderRadius: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 13,
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',

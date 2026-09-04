@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
@@ -66,10 +66,28 @@ export default function OrdersTabScreen() {
         onPress: async () => {
           try {
             await updateOrderStatus(order.id, status);
-            Toast.show({ type: 'success', text1: 'Đã cập nhật trạng thái.' });
+            showMessage({ type: 'success', text1: 'Đã cập nhật trạng thái.' });
             load();
           } catch (e) {
-            Toast.show({ type: 'error', text1: getErrorMessage(e) });
+            showMessage({ type: 'error', text1: getErrorMessage(e) });
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleReceive = (order: Order) => {
+    Alert.alert('Đã nhận hàng', 'Xác nhận bạn đã nhận được hàng để hoàn thành đơn?', [
+      { text: 'Huỷ', style: 'cancel' },
+      {
+        text: 'Xác nhận',
+        onPress: async () => {
+          try {
+            await updateOrderStatus(order.id, 'completed');
+            showMessage({ type: 'success', text1: 'Đã nhận hàng, đơn hoàn thành.' });
+            load();
+          } catch (e) {
+            showMessage({ type: 'error', text1: getErrorMessage(e) });
           }
         },
       },
@@ -111,7 +129,7 @@ export default function OrdersTabScreen() {
             />
           }
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <Pressable style={styles.card} onPress={() => router.push(`/orders/${item.id}`)}>
               <View style={styles.cardHeader}>
                 <Text style={styles.orderId}>#{item.id.slice(0, 8)}</Text>
                 <Badge
@@ -123,17 +141,14 @@ export default function OrdersTabScreen() {
               <Text style={styles.orderDate}>{formatDateTime(item.createdAt)}</Text>
 
               {item.items.map((it, i) => (
-                <Pressable
-                  key={`${it.productId}-${i}`}
-                  style={styles.item}
-                  onPress={() => router.push(`/product/${it.productId}`)}>
+                <View key={`${it.productId}-${i}`} style={styles.item}>
                   <Image source={{ uri: it.image }} style={styles.itemImage} contentFit="cover" />
                   <View style={styles.itemInfo}>
                     <Text style={styles.itemName} numberOfLines={1}>{it.name}</Text>
                     <Text style={styles.itemMeta}>x{it.quantity}</Text>
                   </View>
                   <Text style={styles.itemPrice}>{formatCurrency(it.price * it.quantity)}</Text>
-                </Pressable>
+                </View>
               ))}
 
               <View style={styles.divider} />
@@ -145,6 +160,11 @@ export default function OrdersTabScreen() {
                 <Text style={styles.total}>{formatCurrency(item.totalAmount)}</Text>
               </View>
 
+              {tab === 'buy' && item.status === 'shipping' ? (
+                <View style={styles.actions}>
+                  <Button title="Đã nhận hàng" onPress={() => handleReceive(item)} />
+                </View>
+              ) : null}
               {tab === 'sell' && item.status !== 'completed' && item.status !== 'cancelled' ? (
                 <View style={styles.actions}>
                   {SELLER_ACTIONS.filter((a) => a.status === item.status).map((a) => (
@@ -163,7 +183,7 @@ export default function OrdersTabScreen() {
                   />
                 </View>
               ) : null}
-            </View>
+            </Pressable>
           )}
         />
       )}

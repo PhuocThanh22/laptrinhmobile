@@ -3,6 +3,7 @@ import {
   CircleStop,
   CreditCard,
   Gavel,
+  MapPin,
   MessageCircle,
   ShoppingCart,
   SquarePen,
@@ -13,14 +14,16 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
 import { Avatar } from '@/components/Avatar';
 import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
+import { CenterMessage } from '@/components/CenterMessage';
 import { Countdown } from '@/components/Countdown';
 import { ErrorState } from '@/components/ErrorState';
+import { LocationPicker } from '@/components/LocationPicker';
 import { MediaCarousel } from '@/components/MediaCarousel';
 import { DetailSkeleton } from '@/components/Skeleton';
 import { Screen } from '@/components/Screen';
@@ -55,6 +58,8 @@ export default function ProductDetailScreen() {
   const [placing, setPlacing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [, setTick] = useState(0);
+  const [mapVisible, setMapVisible] = useState(false);
+  const [notice, setNotice] = useState<{ type: 'success' | 'error'; title: string; message?: string } | null>(null);
 
   // tick mỗi giây để cập nhật countdown/trạng thái đấu giá.
   useEffect(() => {
@@ -94,7 +99,7 @@ export default function ProductDetailScreen() {
 
   const handlePlaceBid = async () => {
     if (!user) {
-      Toast.show({ type: 'error', text1: 'Vui lòng đăng nhập để đấu giá.' });
+      showMessage({ type: 'error', text1: 'Vui lòng đăng nhập để đấu giá.' });
       return;
     }
     if (!product) return;
@@ -102,7 +107,7 @@ export default function ProductDetailScreen() {
     const increment = product.bidIncrement ?? 0;
     const validation = validateBid(current, increment, bidInput);
     if (validation) {
-      Toast.show({ type: 'error', text1: validation });
+      showMessage({ type: 'error', text1: validation });
       return;
     }
     setPlacing(true);
@@ -112,11 +117,11 @@ export default function ProductDetailScreen() {
         bidderId: user.uid,
         amount: Number(bidInput.replace(/[^\d]/g, '')),
       });
-      Toast.show({ type: 'success', text1: 'Đặt giá thành công!' });
+      showMessage({ type: 'success', text1: 'Đặt giá thành công!' });
       setBidInput('');
       await load();
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      showMessage({ type: 'error', text1: getErrorMessage(e) });
       await load();
     } finally {
       setPlacing(false);
@@ -133,10 +138,10 @@ export default function ProductDetailScreen() {
         onPress: async () => {
           try {
             await endAuction(product.id);
-            Toast.show({ type: 'success', text1: 'Đã kết thúc đấu giá.' });
+            showMessage({ type: 'success', text1: 'Đã kết thúc đấu giá.' });
             await load();
           } catch (e) {
-            Toast.show({ type: 'error', text1: getErrorMessage(e) });
+            showMessage({ type: 'error', text1: getErrorMessage(e) });
           }
         },
       },
@@ -153,10 +158,10 @@ export default function ProductDetailScreen() {
         onPress: async () => {
           try {
             await deleteProduct(product.id);
-            Toast.show({ type: 'success', text1: 'Đã xoá sản phẩm.' });
+            showMessage({ type: 'success', text1: 'Đã xoá sản phẩm.' });
             safeBack();
           } catch (e) {
-            Toast.show({ type: 'error', text1: getErrorMessage(e) });
+            showMessage({ type: 'error', text1: getErrorMessage(e) });
           }
         },
       },
@@ -172,24 +177,24 @@ export default function ProductDetailScreen() {
         onPress: async () => {
           try {
             await markProductAsSold(product.id);
-            Toast.show({ type: 'success', text1: 'Đã đánh dấu sản phẩm đã bán.' });
+            showMessage({ type: 'success', text1: 'Đã đánh dấu sản phẩm đã bán.' });
             await load();
           } catch (e) {
-            Toast.show({ type: 'error', text1: getErrorMessage(e) });
+            showMessage({ type: 'error', text1: getErrorMessage(e) });
           }
         },
       },
     ]);
   };
 
-  const handleAddToCart = async () => {
+const handleAddToCart = async () => {
     if (!product) return;
     setActionLoading(true);
     try {
       await addItem(product);
-      Toast.show({ type: 'success', text1: 'Đã thêm vào giỏ hàng' });
+      setNotice({ type: 'success', title: 'Đã thêm vào giỏ hàng' });
     } catch (e) {
-      Toast.show({ type: 'error', text1: getErrorMessage(e) });
+      setNotice({ type: 'error', title: 'Không thể thêm vào giỏ', message: getErrorMessage(e) });
     } finally {
       setActionLoading(false);
     }
@@ -245,7 +250,9 @@ export default function ProductDetailScreen() {
           {/* Price */}
           {!isAuction ? (
             <View style={styles.priceBlock}>
-              <Text style={styles.price}>{formatCurrency(fixedPrice)}</Text>
+              <Text style={styles.price} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+                {formatCurrency(fixedPrice)}
+              </Text>
               {sold ? <Badge label="Đã bán" backgroundColor={Colors.textMuted} /> : null}
             </View>
           ) : (
@@ -264,17 +271,17 @@ export default function ProductDetailScreen() {
 
               <View style={styles.auctionStats}>
                 <View style={styles.stat}>
-                  <Text style={styles.statValue}>{formatCurrency(product.startingPrice ?? 0)}</Text>
+                  <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(product.startingPrice ?? 0)}</Text>
                   <Text style={styles.statLabel}>Giá khởi điểm</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.stat}>
-                  <Text style={[styles.statValue, styles.statValueHighlight]}>{formatCurrency(currentPrice)}</Text>
+                  <Text style={[styles.statValue, styles.statValueHighlight]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(currentPrice)}</Text>
                   <Text style={styles.statLabel}>Giá hiện tại</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.stat}>
-                  <Text style={styles.statValue}>{formatCurrency(product.bidIncrement ?? 0)}</Text>
+                  <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>{formatCurrency(product.bidIncrement ?? 0)}</Text>
                   <Text style={styles.statLabel}>Bước giá</Text>
                 </View>
               </View>
@@ -390,7 +397,7 @@ export default function ProductDetailScreen() {
                 icon={MessageCircle}
                 onPress={async () => {
                   if (!user) {
-                    Toast.show({ type: 'error', text1: 'Vui lòng đăng nhập để nhắn tin.' });
+                    showMessage({ type: 'error', text1: 'Vui lòng đăng nhập để nhắn tin.' });
                     return;
                   }
                   try {
@@ -403,12 +410,30 @@ export default function ProductDetailScreen() {
                     });
                     router.push(`/chat/${convId}`);
                   } catch (e) {
-                    Toast.show({ type: 'error', text1: getErrorMessage(e) });
+                    showMessage({ type: 'error', text1: getErrorMessage(e) });
                   }
                 }}
               />
             )}
           </View>
+
+          {/* Seller location */}
+          {product.sellerLocation ? (
+            <Pressable
+              style={styles.locationCard}
+              onPress={() => setMapVisible(true)}>
+              <View style={styles.locationIcon}>
+                <MapPin size={20} color={Colors.primary} />
+              </View>
+              <View style={styles.locationInfo}>
+                <Text style={styles.locationLabel}>Vị trí giao dịch</Text>
+                <Text style={styles.locationAddress} numberOfLines={2}>
+                  {product.sellerLocation.address}
+                </Text>
+              </View>
+              <Text style={styles.locationAction}>Xem bản đồ</Text>
+            </Pressable>
+          ) : null}
 
           {/* Bid history */}
           {isAuction && bids.length > 0 ? (
@@ -521,6 +546,21 @@ export default function ProductDetailScreen() {
           )}
         </View>
       ) : null}
+
+      <LocationPicker
+        visible={mapVisible}
+        initial={product?.sellerLocation ?? undefined}
+        readOnly
+        onClose={() => setMapVisible(false)}
+      />
+
+      <CenterMessage
+        visible={!!notice}
+        type={notice?.type}
+        title={notice?.title ?? ''}
+        message={notice?.message}
+        onClose={() => setNotice(null)}
+      />
     </Screen>
   );
 }
@@ -554,6 +594,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '900',
     color: Colors.primary,
+    flexShrink: 1,
   },
   auctionPanel: {
     marginTop: 12,
@@ -758,6 +799,45 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textMuted,
     marginTop: 2,
+  },
+  locationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 14,
+    gap: 12,
+    marginTop: 10,
+  },
+  locationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: Colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  locationInfo: {
+    flex: 1,
+  },
+  locationLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.textMuted,
+    textTransform: 'uppercase',
+  },
+  locationAddress: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+    marginTop: 2,
+  },
+  locationAction: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.primary,
   },
   bidList: {
     backgroundColor: Colors.card,
