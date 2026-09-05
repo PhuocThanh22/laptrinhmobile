@@ -245,7 +245,7 @@ export function LocationPicker({ visible, initial, readOnly, onClose, onConfirm 
     <Modal visible={visible} animationType="slide" onRequestClose={onClose} transparent>
       <KeyboardAvoidingView
         style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.sheet}>
           <View style={styles.header}>
             <Text style={styles.title}>{readOnly ? 'Vị trí giao dịch' : 'Chọn vị trí'}</Text>

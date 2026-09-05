@@ -1,7 +1,7 @@
 import { Star } from 'lucide-react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { showMessage } from '@/components/MessageCenter';
 
 import { AppHeader } from '@/components/AppHeader';
@@ -50,35 +50,38 @@ export default function ReviewScreen() {
   return (
     <Screen>
       <AppHeader title="Đánh giá sản phẩm" onBack={safeBack} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {product ? (
-          <View style={styles.productCard}>
-            <Text style={styles.productName}>{product.name}</Text>
-            <Text style={styles.productPrice}>{formatCurrency(product.price)}</Text>
+<KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          {product ? (
+            <View style={styles.productCard}>
+              <Text style={styles.productName}>{product.name}</Text>
+              <Text style={styles.productPrice}>{formatCurrency(product.price)}</Text>
+            </View>
+          ) : null}
+          <Text style={styles.label}>Số sao</Text>
+          <View style={styles.ratingWrap}>
+            <RatingStars rating={rating} size={32} onChange={setRating} />
+            <Text style={styles.ratingText}>{rating} / 5</Text>
           </View>
-        ) : null}
-        <Text style={styles.label}>Số sao</Text>
-        <View style={styles.ratingWrap}>
-          <RatingStars rating={rating} size={32} onChange={setRating} />
-          <Text style={styles.ratingText}>{rating} / 5</Text>
-        </View>
-        <TextField
-          label="Nhận xét"
-          value={comment}
-          onChangeText={setComment}
-          placeholder="Chất lượng sản phẩm, thái độ người bán..."
-          multiline
-          maxLength={500}
-        />
-        <Text style={styles.hint}>{comment.length}/500 ký tự</Text>
-        <Button title={submitting ? 'Đang gửi...' : 'Gửi đánh giá'} icon={Star} loading={submitting} onPress={handleSubmit} style={styles.btn} />
-      </ScrollView>
+          <TextField
+            label="Nhận xét"
+            value={comment}
+            onChangeText={setComment}
+            placeholder="Chất lượng sản phẩm, thái độ người bán..."
+            multiline
+            maxLength={500}
+          />
+          <Text style={styles.hint}>{comment.length}/500 ký tự</Text>
+          <Button title={submitting ? 'Đang gửi...' : 'Gửi đánh giá'} icon={Star} loading={submitting} onPress={handleSubmit} style={styles.btn} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 16, gap: 8 },
+  flex: { flex: 1 },
+  content: { padding: 16, gap: 8, paddingBottom: 32 },
   productCard: { backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1, borderColor: Colors.border, padding: 14 },
   productName: { fontSize: 15, fontWeight: '700', color: Colors.text },
   productPrice: { fontSize: 13, color: Colors.primary, marginTop: 4, fontWeight: '700' },

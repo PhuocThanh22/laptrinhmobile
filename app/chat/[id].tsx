@@ -98,7 +98,7 @@ export default function ChatDetailScreen() {
           </Text>
         </View>
       ) : null}
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         {msgError ? (
           <View style={styles.errorBox}>
             <CircleAlert size={24} color={Colors.danger} />

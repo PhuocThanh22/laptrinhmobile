@@ -135,9 +135,9 @@ export default function CheckoutScreen() {
       ) : orderItems.length === 0 ? (
         <ErrorState message="Đơn hàng trống." />
       ) : (
-        <KeyboardAvoidingView
+<KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <ScrollView
             contentContainerStyle={styles.content}
             keyboardShouldPersistTaps="handled"

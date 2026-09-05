@@ -201,7 +201,7 @@ export function ProductForm({ initial, submitLabel, onSubmit }: ProductFormProps
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <ScrollView
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
