@@ -112,12 +112,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   name: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: Colors.text,
   },
   price: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     color: Colors.primary,
     marginTop: 4,
@@ -143,12 +143,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: Colors.text,
   },
   totalValue: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '900',
     color: Colors.primary,
   },

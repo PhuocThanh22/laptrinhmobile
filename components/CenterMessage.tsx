@@ -68,13 +68,13 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   title: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: Colors.text,
     textAlign: 'center',
   },
   message: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textMuted,
     textAlign: 'center',
     marginTop: 8,

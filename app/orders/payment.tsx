@@ -187,8 +187,8 @@ function Row({ label, value, bold }: { label: string; value: string; bold?: bool
 
 const rowStyles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
-  label: { fontSize: 13, color: Colors.textMuted },
-  value: { fontSize: 13, color: Colors.text, fontWeight: '600', maxWidth: 180, textAlign: 'right' },
+  label: { fontSize: 12, color: Colors.textMuted },
+  value: { fontSize: 12, color: Colors.text, fontWeight: '600', maxWidth: 180, textAlign: 'right' },
   bold: { fontWeight: '900', color: Colors.primary },
 });
 
@@ -202,8 +202,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.primary,
   },
-  amount: { fontSize: 28, fontWeight: '900', color: Colors.primary },
-  orderId: { fontSize: 12, color: Colors.textMuted, marginTop: 4 },
+  amount: { fontSize: 27, fontWeight: '900', color: Colors.primary },
+  orderId: { fontSize: 11, color: Colors.textMuted, marginTop: 4 },
   countdownRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 10,
   },
-  countdownLabel: { fontSize: 12, color: Colors.textMuted },
+  countdownLabel: { fontSize: 11, color: Colors.textMuted },
   expired: { marginTop: 10, color: Colors.danger, fontWeight: '700' },
   qrCard: {
     backgroundColor: Colors.card,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   qr: { width: 260, height: 260, backgroundColor: Colors.card },
-  qrHint: { fontSize: 12, color: Colors.textMuted, textAlign: 'center', marginTop: 12, lineHeight: 18 },
+  qrHint: { fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginTop: 12, lineHeight: 18 },
   infoCard: {
     backgroundColor: Colors.card,
     borderRadius: 16,
@@ -235,12 +235,12 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 16,
   },
-  note: { fontSize: 12, color: Colors.textMuted, marginTop: 12, lineHeight: 18, textAlign: 'center' },
+  note: { fontSize: 11, color: Colors.textMuted, marginTop: 12, lineHeight: 18, textAlign: 'center' },
   primaryBtn: { marginTop: 16 },
   secondaryBtn: { marginTop: 10 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
   emptyText: { color: Colors.textMuted },
   successWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
-  successTitle: { fontSize: 20, fontWeight: '900', color: Colors.success },
-  successDesc: { fontSize: 13, color: Colors.textMuted },
+  successTitle: { fontSize: 19, fontWeight: '900', color: Colors.success },
+  successDesc: { fontSize: 12, color: Colors.textMuted },
 });

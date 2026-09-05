@@ -109,20 +109,20 @@ const styles = StyleSheet.create({
   },
   appName: {
     textAlign: 'center',
-    fontSize: 28,
+    fontSize: 27,
     fontWeight: '900',
     color: Colors.text,
   },
   title: {
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: Colors.text,
     marginTop: 20,
   },
   subtitle: {
     textAlign: 'center',
-    fontSize: 13,
+    fontSize: 12,
     lineHeight: 20,
     color: Colors.textMuted,
     marginTop: 12,

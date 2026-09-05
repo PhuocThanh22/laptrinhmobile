@@ -127,8 +127,8 @@ export default function ChatListScreen() {
 
 const styles = StyleSheet.create({
   errorWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
-  errorText: { color: Colors.danger, textAlign: 'center', fontSize: 13 },
-  errorHint: { color: Colors.textMuted, textAlign: 'center', fontSize: 12, lineHeight: 18 },
+  errorText: { color: Colors.danger, textAlign: 'center', fontSize: 12 },
+  errorHint: { color: Colors.textMuted, textAlign: 'center', fontSize: 11, lineHeight: 18 },
   content: { padding: 16, paddingTop: 8 },
   card: {
     flexDirection: 'row',
@@ -143,9 +143,9 @@ const styles = StyleSheet.create({
   },
   avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.border },
   info: { flex: 1, gap: 2 },
-  name: { fontSize: 15, fontWeight: '700', color: Colors.text },
-  product: { fontSize: 11, color: Colors.textMuted },
-  last: { fontSize: 13, color: Colors.text, marginTop: 2 },
+  name: { fontSize: 14, fontWeight: '700', color: Colors.text },
+  product: { fontSize: 10, color: Colors.textMuted },
+  last: { fontSize: 12, color: Colors.text, marginTop: 2 },
   right: { alignItems: 'flex-end', gap: 6 },
-  time: { fontSize: 10, color: Colors.textMuted },
+  time: { fontSize: 9, color: Colors.textMuted },
 });

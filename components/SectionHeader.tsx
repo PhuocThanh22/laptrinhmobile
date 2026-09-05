@@ -31,12 +31,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: Colors.text,
   },
   right: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.primary,
   },

@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 6,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   value: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: Colors.text,
   },
 });

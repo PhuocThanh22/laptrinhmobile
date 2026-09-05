@@ -123,31 +123,31 @@ const styles = StyleSheet.create({
   },
   soldText: {
     color: Colors.white,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
   },
   body: {
     padding: 10,
   },
   price: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: Colors.primary,
     marginBottom: 2,
   },
   name: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     minHeight: 36,
   },
   meta: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 4,
   },
   seller: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
   },
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   location: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
   },
   timeRow: {

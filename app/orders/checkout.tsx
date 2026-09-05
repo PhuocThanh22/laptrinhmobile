@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     color: Colors.text,
     marginBottom: 8,
@@ -285,12 +285,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   paymentTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.text,
   },
 paymentDesc: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
     marginTop: 2,
   },
@@ -310,18 +310,18 @@ paymentDesc: {
     backgroundColor: Colors.card,
   },
   qrPreviewTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: Colors.text,
     marginTop: 6,
   },
   qrPreviewAccount: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.primary,
   },
   qrPreviewHint: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
     textAlign: 'center',
     lineHeight: 18,
@@ -342,17 +342,17 @@ paymentDesc: {
     flex: 1,
   },
   itemName: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
   },
   itemMeta: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
   },
   itemPrice: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: Colors.text,
   },
@@ -367,12 +367,12 @@ paymentDesc: {
     alignItems: 'center',
   },
   totalLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: Colors.text,
   },
   totalValue: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: Colors.primary,
   },

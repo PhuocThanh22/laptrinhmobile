@@ -249,12 +249,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   name: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: Colors.text,
   },
   price: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: Colors.primary,
     marginTop: 3,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   auctionMetaText: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
   },
   timeRow: {
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   winnerText: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
   },

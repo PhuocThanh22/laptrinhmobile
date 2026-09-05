@@ -96,12 +96,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   name: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.text,
   },
   price: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: Colors.primary,
     marginTop: 2,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   bidsText: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
   },
   timeWrap: {
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   endedText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: Colors.textMuted,
   },
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
   location: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
   },
 });

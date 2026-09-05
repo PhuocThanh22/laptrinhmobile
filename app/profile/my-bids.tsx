@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.text,
   },
@@ -163,21 +163,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   priceLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: Colors.textMuted,
   },
   myBid: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: Colors.success,
   },
   currentPrice: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: Colors.primary,
   },
   time: {
-    fontSize: 10,
+    fontSize: 9,
     color: Colors.textMuted,
     marginTop: 6,
   },

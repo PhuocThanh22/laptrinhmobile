@@ -57,12 +57,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 22,
+    fontSize: 21,
     fontWeight: '900',
     color: Colors.text,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textMuted,
     marginTop: 8,
   },
@@ -71,13 +71,13 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   detail: {
-    fontSize: 15,
+    fontSize: 14,
     color: Colors.text,
     marginTop: 8,
     fontWeight: '600',
   },
   note: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textMuted,
     textAlign: 'center',
     marginTop: 12,

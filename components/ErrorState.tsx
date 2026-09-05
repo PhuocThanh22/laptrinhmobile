@@ -39,12 +39,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: Colors.text,
   },
   message: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textMuted,
     textAlign: 'center',
     lineHeight: 19,

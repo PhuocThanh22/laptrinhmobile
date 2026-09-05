@@ -172,12 +172,12 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   brand: {
-    fontSize: 24,
+    fontSize: 23,
     fontWeight: '900',
     color: Colors.text,
   },
   tagline: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 1,
   },
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   noData: {
     paddingHorizontal: 16,
     color: Colors.textMuted,
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
     paddingVertical: 16,
   },

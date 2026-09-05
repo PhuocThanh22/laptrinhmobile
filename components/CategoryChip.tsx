@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   label: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     fontWeight: '600',
     textAlign: 'center',

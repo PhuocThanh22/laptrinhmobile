@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   value: {
     minWidth: 34,
     textAlign: 'center',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.text,
   },

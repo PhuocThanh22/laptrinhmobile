@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 6,
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     height: 48,
-    fontSize: 15,
+    fontSize: 14,
     color: Colors.text,
   },
   multiline: {
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
   error: {
     color: Colors.danger,
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 4,
   },
 });

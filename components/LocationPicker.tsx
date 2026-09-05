@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
     color: Colors.text,
   },
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   hint: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
     marginTop: 10,
   },
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 6,
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 15,
+    fontSize: 14,
     color: Colors.text,
     minHeight: 48,
     maxHeight: 100,

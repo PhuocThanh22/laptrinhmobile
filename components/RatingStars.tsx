@@ -50,6 +50,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 2 },
   star: { padding: 2 },
   summaryRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  summaryText: { fontSize: 12, color: Colors.textMuted, fontWeight: '600' },
-  noReview: { fontSize: 12, color: Colors.textMuted },
+  summaryText: { fontSize: 11, color: Colors.textMuted, fontWeight: '600' },
+  noReview: { fontSize: 11, color: Colors.textMuted },
 });

@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   readonlyLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 6,
@@ -217,15 +217,15 @@ const styles = StyleSheet.create({
   },
   readonlyText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: Colors.text,
   },
   joined: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     color: Colors.text,
     marginBottom: 10,
@@ -252,21 +252,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationAddress: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: Colors.text,
   },
   locationCoords: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
   },
   locationEmpty: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textMuted,
   },
   locationHint: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     lineHeight: 16,
     marginTop: 10,

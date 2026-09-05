@@ -55,12 +55,12 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: 23,
     fontWeight: '900',
     color: Colors.text,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
     marginTop: 2,
   },

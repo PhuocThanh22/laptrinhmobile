@@ -162,20 +162,20 @@ const styles = StyleSheet.create({
   },
   appName: {
     textAlign: 'center',
-    fontSize: 28,
+    fontSize: 27,
     fontWeight: '900',
     color: Colors.text,
   },
   title: {
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: Colors.text,
     marginTop: 20,
   },
   subtitle: {
     textAlign: 'center',
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textMuted,
     marginTop: 4,
   },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   forgotLink: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.primary,
     padding: 4,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     marginHorizontal: 12,
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textMuted,
   },
   googleButton: {
@@ -222,11 +222,11 @@ const styles = StyleSheet.create({
     marginTop: 28,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textMuted,
   },
   footerLink: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.primary,
   },

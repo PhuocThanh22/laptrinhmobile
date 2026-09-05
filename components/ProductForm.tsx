@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     marginBottom: 6,
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
   },
   remoteTagText: {
     color: Colors.white,
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '700',
   },
   addImage: {
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   addImageText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: Colors.primary,
   },
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   },
   videoMetaText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: Colors.text,
   },
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   videoRemoveText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: Colors.white,
   },
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   addVideoText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.primary,
   },
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   chipText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
   },
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   auctionTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: Colors.text,
     marginBottom: 8,
@@ -565,12 +565,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   quickChipText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: Colors.text,
   },
   hint: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     lineHeight: 16,
   },

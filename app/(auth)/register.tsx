@@ -216,20 +216,20 @@ const styles = StyleSheet.create({
   },
   appName: {
     textAlign: 'center',
-    fontSize: 26,
+    fontSize: 25,
     fontWeight: '900',
     color: Colors.text,
   },
   title: {
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: Colors.text,
     marginTop: 14,
   },
   subtitle: {
     textAlign: 'center',
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textMuted,
     marginTop: 4,
   },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     marginHorizontal: 12,
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.textMuted,
   },
   googleButton: {
@@ -265,11 +265,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textMuted,
   },
   footerLink: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: Colors.primary,
   },

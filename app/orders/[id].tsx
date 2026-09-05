@@ -184,12 +184,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   orderId: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: Colors.text,
   },
   orderDate: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
   },
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: Colors.text,
     marginBottom: 8,
@@ -223,17 +223,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemName: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
   },
   itemUnit: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
   },
   itemPrice: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.text,
   },
@@ -248,11 +248,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   totalLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
   },
   totalAmount: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
     color: Colors.primary,
   },
@@ -264,13 +264,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   infoLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
     minWidth: 90,
   },
   infoValue: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     textAlign: 'right',
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textMuted,
   },
 });

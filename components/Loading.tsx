@@ -164,6 +164,6 @@ const styles = StyleSheet.create({
   text: {
     marginTop: 12,
     color: Colors.textMuted,
-    fontSize: 13,
+    fontSize: 12,
   },
 });

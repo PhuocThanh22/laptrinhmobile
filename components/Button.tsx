@@ -91,10 +91,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   smallTitle: {
-    fontSize: 13,
+    fontSize: 12,
   },
   title: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   icon: {

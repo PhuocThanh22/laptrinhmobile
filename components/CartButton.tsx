@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#fff',
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '800',
   },
 });

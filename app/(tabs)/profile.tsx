@@ -139,12 +139,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '900',
     color: Colors.white,
   },
   email: {
-    fontSize: 13,
+    fontSize: 12,
     color: 'rgba(255,255,255,0.85)',
     marginTop: 2,
   },
@@ -163,12 +163,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '900',
     color: Colors.text,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
   },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: Colors.text,
   },
@@ -217,14 +217,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoutText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.danger,
   },
   version: {
     textAlign: 'center',
     color: Colors.textMuted,
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 24,
     marginBottom: 16,
   },

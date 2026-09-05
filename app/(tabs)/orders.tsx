@@ -201,12 +201,12 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 24,
+    fontSize: 23,
     fontWeight: '900',
     color: Colors.text,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
     marginTop: 2,
   },
@@ -232,12 +232,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   orderId: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: Colors.text,
   },
   orderDate: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
     marginBottom: 8,
@@ -258,16 +258,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemName: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
   },
   itemMeta: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
   },
   itemPrice: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.text,
   },
@@ -286,17 +286,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   receiver: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: Colors.text,
   },
   address: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 2,
   },
   total: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
     color: Colors.primary,
   },

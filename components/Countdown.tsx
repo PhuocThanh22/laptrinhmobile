@@ -43,16 +43,16 @@ export function Countdown({ endTime, onEnd, long, compact }: CountdownProps) {
 
 const styles = StyleSheet.create({
   time: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: Colors.accent,
     fontVariant: ['tabular-nums'],
   },
   compactText: {
-    fontSize: 11,
+    fontSize: 10,
   },
   ended: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.textMuted,
   },

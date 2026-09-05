@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   videoTagText: {
     color: Colors.white,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
   },
   counter: {
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   counterText: {
     color: Colors.white,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
   },
   dots: {

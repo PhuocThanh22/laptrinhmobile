@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   name: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '800',
     color: Colors.text,
     lineHeight: 28,
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   price: {
-    fontSize: 26,
+    fontSize: 25,
     fontWeight: '900',
     color: Colors.primary,
     flexShrink: 1,
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   auctionHeaderTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
     color: Colors.text,
   },
@@ -647,16 +647,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.border,
   },
   statValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: Colors.text,
   },
   statValueHighlight: {
     color: Colors.primary,
-    fontSize: 18,
+    fontSize: 17,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 9,
     color: Colors.textMuted,
     marginTop: 2,
   },
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   auctionMeta: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
   },
   bidSection: {
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   minBidHint: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.text,
   },
   minBidValue: {
@@ -700,7 +700,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.accent,
   },
   quickBidText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: Colors.text,
   },
@@ -722,12 +722,12 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   winnerTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '900',
     color: Colors.success,
   },
   winnerText: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.text,
     marginTop: 6,
   },
@@ -736,7 +736,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   winnerPrice: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.text,
     marginTop: 2,
   },
@@ -756,24 +756,24 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   deadlineLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: Colors.text,
   },
   deadlineWarn: {
-    fontSize: 12,
+    fontSize: 11,
     lineHeight: 17,
     color: Colors.danger,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: Colors.text,
     marginTop: 18,
     marginBottom: 8,
   },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.text,
     lineHeight: 21,
   },
@@ -791,12 +791,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sellerName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.text,
   },
   sellerDate: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
     marginTop: 2,
   },
@@ -823,19 +823,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: Colors.textMuted,
     textTransform: 'uppercase',
   },
   locationAddress: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: Colors.text,
     marginTop: 2,
   },
   locationAction: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.primary,
   },
@@ -862,17 +862,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bidName: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: Colors.text,
   },
   bidTime: {
-    fontSize: 11,
+    fontSize: 10,
     color: Colors.textMuted,
     marginTop: 1,
   },
   bidAmount: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: Colors.primary,
   },
@@ -917,8 +917,8 @@ const styles = StyleSheet.create({
   },
   reviewTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   reviewMeta: { flex: 1 },
-  reviewName: { fontSize: 13, fontWeight: '700', color: Colors.text },
-  reviewDate: { fontSize: 11, color: Colors.textMuted, marginTop: 1 },
-  reviewComment: { fontSize: 13, color: Colors.text, marginTop: 8, lineHeight: 19 },
-  noReviewText: { fontSize: 13, color: Colors.textMuted, marginTop: 8, fontStyle: 'italic' },
+  reviewName: { fontSize: 12, fontWeight: '700', color: Colors.text },
+  reviewDate: { fontSize: 10, color: Colors.textMuted, marginTop: 1 },
+  reviewComment: { fontSize: 12, color: Colors.text, marginTop: 8, lineHeight: 19 },
+  noReviewText: { fontSize: 12, color: Colors.textMuted, marginTop: 8, fontStyle: 'italic' },
 });

@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   chipText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: Colors.text,
   },
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accent,
   },
   saleChipText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: Colors.text,
   },
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   countText: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.textMuted,
     fontWeight: '600',
   },

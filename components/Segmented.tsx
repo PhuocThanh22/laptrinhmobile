@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
   },
   text: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.textMuted,
   },

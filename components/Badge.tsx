@@ -36,14 +36,14 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   text: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
   },
   smallText: {
-    fontSize: 10,
+    fontSize: 9,
   },
   icon: {
-    fontSize: 10,
+    fontSize: 9,
     marginRight: 3,
   },
 });
