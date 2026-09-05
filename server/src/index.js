@@ -24,19 +24,32 @@ const { buildVerificationHtml, buildPasswordResetHtml, buildAuctionWinHtml } = r
 const PORT = process.env.PORT || 4000;
 
 // ---------- Firebase Admin ----------
+// Ưu tiên đọc service account từ env var FIREBASE_SERVICE_ACCOUNT_JSON (dễ triển
+// khai lên Render/Railway), nếu không có thì đọc từ file.
 const SERVER_ROOT = path.resolve(__dirname, '..');
-const serviceAccountPath = path.resolve(
-  SERVER_ROOT,
-  process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccountKey.json',
-);
-if (!fs.existsSync(serviceAccountPath)) {
-  console.error('✖ Không tìm thấy service account:', serviceAccountPath);
-  console.error(
-    '  Hãy tải file serviceAccountKey.json về thư mục server/ và điền FIREBASE_SERVICE_ACCOUNT_PATH trong server/.env',
+let serviceAccount;
+if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  } catch (e) {
+    console.error('✖ FIREBASE_SERVICE_ACCOUNT_JSON không phải JSON hợp lệ:', e.message);
+    process.exit(1);
+  }
+} else {
+  const serviceAccountPath = path.resolve(
+    SERVER_ROOT,
+    process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccountKey.json',
   );
-  process.exit(1);
+  if (!fs.existsSync(serviceAccountPath)) {
+    console.error('✖ Không tìm thấy service account:', serviceAccountPath);
+    console.error(
+      '  Hãy tải file serviceAccountKey.json về thư mục server/ và điền FIREBASE_SERVICE_ACCOUNT_PATH trong server/.env',
+    );
+    process.exit(1);
+  }
+  serviceAccount = require(serviceAccountPath);
 }
-initializeApp({ credential: cert(require(serviceAccountPath)) });
+initializeApp({ credential: cert(serviceAccount) });
 
 const app = express();
 app.use(cors());
