@@ -4,6 +4,7 @@ import { Tabs } from 'expo-router';
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/colors';
 import type { LucideIcon } from 'lucide-react-native';
+import type { ColorValue } from 'react-native';
 
 function TabIcon({
   icon: Icon,
@@ -11,10 +12,10 @@ function TabIcon({
   size,
 }: {
   icon: LucideIcon;
-  color: string;
+  color: ColorValue;
   size: number;
 }) {
-  return <Icon color={color} size={size} />;
+  return <Icon color={String(color)} size={size} />;
 }
 
 export default function TabLayout() {

@@ -1,5 +1,5 @@
 import { LocateFixed, MapPin, X } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { showMessage } from '@/components/MessageCenter';
 import * as Location from 'expo-location';
 
@@ -29,6 +29,118 @@ interface LocationPickerProps {
 
 const HANOI_COORDS = { latitude: 21.0285, longitude: 105.8542 };
 
+function buildMapHtml(readOnly: boolean): string {
+  const interactive = readOnly ? 'false' : 'true';
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  html, body { height: 100%; margin: 0; padding: 0; }
+  #map { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+  .leaflet-container { background: #e5e3df; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  'use strict';
+  var interactive = ${interactive};
+  var map = null;
+  var marker = null;
+  var dragJustEnded = false;
+
+  function postMessage(type, data) {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: type, data: data }));
+    }
+  }
+
+  function round6(v) {
+    return Math.round(v * 1000000) / 1000000;
+  }
+
+  function notifyLocation(lat, lng) {
+    postMessage('location', { latitude: round6(lat), longitude: round6(lng) });
+  }
+
+  function reposition(lat, lng) {
+    marker.setLatLng([lat, lng]);
+    map.setView([lat, lng]);
+  }
+
+  function init() {
+    map = L.map('map', {
+      center: [21.0285, 105.8542],
+      zoom: 17,
+      zoomControl: true,
+      attributionControl: true,
+      dragging: interactive,
+      doubleClickZoom: interactive,
+      scrollWheelZoom: true,
+    });
+
+    L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 20,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(map);
+
+    marker = L.marker([21.0285, 105.8542], {
+      draggable: interactive,
+      keyboard: false,
+    }).addTo(map);
+
+    if (!interactive) {
+      map.invalidateSize();
+      return;
+    }
+
+    marker.on('dragend', function () {
+      var p = marker.getLatLng();
+      notifyLocation(p.lat, p.lng);
+    });
+
+    map.on('dragstart', function () {
+      dragJustEnded = true;
+    });
+
+    map.on('moveend', function () {
+      var c = map.getCenter();
+      marker.setLatLng(c);
+      notifyLocation(c.lat, c.lng);
+      setTimeout(function () { dragJustEnded = false; }, 300);
+    });
+
+    map.on('click', function (e) {
+      if (dragJustEnded) { return; }
+      reposition(e.latlng.lat, e.latlng.lng);
+      notifyLocation(e.latlng.lat, e.latlng.lng);
+    });
+
+    map.invalidateSize();
+  }
+
+  window.__setLocation = function (lat, lng) {
+    lat = Number(lat);
+    lng = Number(lng);
+    if (!isFinite(lat) || !isFinite(lng) || !map) { return; }
+    reposition(lat, lng);
+  };
+
+  window.addEventListener('load', function () {
+    init();
+  });
+})();
+</script>
+</body>
+</html>`;
+}
+
 export function LocationPicker({ visible, initial, readOnly, onClose, onConfirm }: LocationPickerProps) {
   const [coords, setCoords] = useState<{ latitude: number; longitude: number }>(
     initial ?? HANOI_COORDS,
@@ -36,12 +148,61 @@ export function LocationPicker({ visible, initial, readOnly, onClose, onConfirm 
   const [address, setAddress] = useState(initial?.address ?? '');
   const [locating, setLocating] = useState(false);
 
+  const webRef = useRef<WebView>(null);
+  const loadedRef = useRef(false);
+  const coordsRef = useRef(coords);
+
+  const mapHtml = useMemo(() => buildMapHtml(!!readOnly), [readOnly]);
+
+  useEffect(() => {
+    coordsRef.current = coords;
+  }, [coords]);
+
   useEffect(() => {
     if (visible) {
       setCoords(initial ?? HANOI_COORDS);
       setAddress(initial?.address ?? '');
     }
   }, [visible, initial]);
+
+  const sendToMap = useCallback((lat: number, lng: number) => {
+    webRef.current?.injectJavaScript(
+      `window.__setLocation && window.__setLocation(${lat}, ${lng}); true;`,
+    );
+  }, []);
+
+  useEffect(() => {
+    if (visible && loadedRef.current) {
+      sendToMap(coordsRef.current.latitude, coordsRef.current.longitude);
+    }
+  }, [visible, sendToMap]);
+
+  const handleLoadEnd = useCallback(() => {
+    loadedRef.current = true;
+    sendToMap(coordsRef.current.latitude, coordsRef.current.longitude);
+  }, [sendToMap]);
+
+  const handleMessage = useCallback(
+    (event: WebViewMessageEvent) => {
+      if (readOnly) return;
+      try {
+        const msg = JSON.parse(event.nativeEvent.data);
+        if (
+          msg?.type === 'location' &&
+          Number.isFinite(msg.data?.latitude) &&
+          Number.isFinite(msg.data?.longitude)
+        ) {
+          setCoords({
+            latitude: msg.data.latitude,
+            longitude: msg.data.longitude,
+          });
+        }
+      } catch {
+        // bỏ qua tin nhắn không phải JSON
+      }
+    },
+    [readOnly],
+  );
 
   const getCurrentLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -57,6 +218,7 @@ export function LocationPicker({ visible, initial, readOnly, onClose, onConfirm 
         longitude: loc.coords.longitude,
       };
       setCoords(current);
+      sendToMap(current.latitude, current.longitude);
       if (!address) {
         setAddress('Vị trí hiện tại');
       }
@@ -93,25 +255,20 @@ export function LocationPicker({ visible, initial, readOnly, onClose, onConfirm 
           </View>
 
           <View style={styles.mapWrap}>
-            <MapView
+            <WebView
+              ref={webRef}
               style={styles.map}
-              initialRegion={{
-                latitude: coords.latitude,
-                longitude: coords.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-              onPress={(e) => !readOnly && setCoords(e.nativeEvent.coordinate)}
-              onRegionChangeComplete={(region) =>
-                !readOnly && setCoords({ latitude: region.latitude, longitude: region.longitude })
-              }
-            >
-              <Marker coordinate={coords} draggable={!readOnly} onDragEnd={(e) => setCoords(e.nativeEvent.coordinate)}>
-                <View style={styles.markerWrap}>
-                  <MapPin size={28} color={Colors.primary} />
-                </View>
-              </Marker>
-            </MapView>
+              originWhitelist={['*']}
+              source={{ html: mapHtml }}
+              javaScriptEnabled
+              domStorageEnabled
+              setSupportMultipleWindows={false}
+              bounces={false}
+              scrollEnabled={false}
+              overScrollMode="never"
+              onLoadEnd={handleLoadEnd}
+              onMessage={handleMessage}
+            />
             {!readOnly && (
               <Pressable style={styles.locateBtn} onPress={getCurrentLocation} disabled={locating}>
                 {locating ? (
@@ -190,7 +347,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
   },
   markerWrap: {
     backgroundColor: Colors.white,
