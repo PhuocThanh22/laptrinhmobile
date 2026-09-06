@@ -30,6 +30,13 @@ export interface CreateOrderInput {
   paymentMethod?: PaymentMethod;
 }
 
+/**
+ * Tạo đơn hàng mới bằng transaction để chống "bán 2 lần cùng 1 sản phẩm".
+ * - Sản phẩm giá cố định: đánh dấu `sold` khi tạo đơn.
+ * - Sản phẩm đấu giá: chỉ người thắng cuộc, sau khi phiên kết thúc, trong hạn 24h mới được đặt.
+ * - Thanh toán: COD -> `paid` ngay, VietQR -> `pending` chờ xác nhận.
+ * - Tự động gom danh sách sellerIds từ các sản phẩm trong đơn.
+ */
 export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const { db } = requireFirebase();
 
@@ -124,6 +131,7 @@ export async function getOrdersBySeller(sellerId: string): Promise<Order[]> {
   return orders;
 }
 
+/** Lấy chi tiết một đơn hàng theo id. Trả về `null` nếu không tồn tại. */
 export async function getOrderById(orderId: string): Promise<Order | null> {
   const { db } = requireFirebase();
   const { getDoc } = await import('firebase/firestore');
@@ -132,11 +140,13 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
   return { id: snap.id, ...snap.data() } as Order;
 }
 
+/** Cập nhật trạng thái đơn (pending -> confirmed -> shipping -> completed / cancelled). */
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
   const { db } = requireFirebase();
   await updateDoc(doc(db, 'orders', orderId), { status });
 }
 
+/** Cập nhật trạng thái thanh toán (VietQR: pending -> paid/failed, ghi lại thời điểm trả tiền). */
 export async function updatePaymentStatus(orderId: string, paymentStatus: PaymentStatus): Promise<void> {
   const { db } = requireFirebase();
   await updateDoc(doc(db, 'orders', orderId), {

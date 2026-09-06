@@ -4,6 +4,11 @@
  */
 import { apiUrl, isApiConfigured } from '@/constants/config';
 
+/**
+ * Gửi email thông báo "bạn đã thắng đấu giá" cho winner.
+ * - Gọi endpoint `/send-auction-win-email` trên mail server (Brevo).
+ * - Nếu chưa cấu hình `EXPO_PUBLIC_API_URL` (isApiConfigured = false) thì bỏ qua im lặng.
+ */
 export async function sendAuctionWinEmail(input: {
   email: string;
   name?: string;

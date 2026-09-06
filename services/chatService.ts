@@ -38,10 +38,18 @@ export interface ChatMessage {
   createdAt: number;
 }
 
+/**
+ * Tạo key chuẩn hoá `uid1_uid2` (sắp xếp 2 uid) để nhận diện 1-1 đúng 2 chiều.
+ */
 function sortedKey(a: string, b: string) {
   return [a, b].sort().join('_');
 }
 
+/**
+ * Tìm hoặc tạo cuộc trò chuyện giữa currentUserId & otherUserId.
+ * - Dùng `participantsKey` + `productId` để phân biệt DM toàn cục và chat theo sản phẩm.
+ * - Không cho nhắn với chính mình. Trả về id của conversation (có sẵn hoặc mới tạo).
+ */
 export async function getOrCreateConversation(input: {
   currentUserId: string;
   otherUserId: string;
@@ -81,6 +89,7 @@ export async function getOrCreateConversation(input: {
   return ref.id;
 }
 
+/** Lấy một lần danh sách conversation của user (mới nhất trước). */
 export async function getConversations(userId: string): Promise<Conversation[]> {
   const { db } = requireFirebase();
   const q = query(collection(db, 'conversations'), where('participants', 'array-contains', userId));
@@ -90,6 +99,10 @@ export async function getConversations(userId: string): Promise<Conversation[]> 
   return list;
 }
 
+/**
+ * Đăng ký lắng nghe realtime danh sách conversation — tự cập nhật khi có tin nhắn mới.
+ * Trả về hàm `Unsubscribe` để gỡ listener khi thoát màn hình.
+ */
 export function subscribeConversations(
   userId: string,
   cb: (list: Conversation[]) => void,
@@ -108,6 +121,7 @@ export function subscribeConversations(
   );
 }
 
+/** Lấy chi tiết một conversation theo id. Trả về `null` nếu không tồn tại. */
 export async function getConversationById(id: string): Promise<Conversation | null> {
   const { db } = requireFirebase();
   const snap = await getDoc(doc(db, 'conversations', id));
@@ -115,6 +129,11 @@ export async function getConversationById(id: string): Promise<Conversation | nu
   return { id: snap.id, ...snap.data() } as Conversation;
 }
 
+/**
+ * Gửi một tin nhắn vào conversation.
+ * - Giới hạn độ dài 1-1000 ký tự.
+ * - Thêm message mới vào subcollection `messages` + cập nhật lastMessage/lastMessageAt/updatedAt.
+ */
 export async function sendMessage(conversationId: string, senderId: string, text: string): Promise<void> {
   const { db } = requireFirebase();
   const trimmed = text.trim();
@@ -133,6 +152,10 @@ export async function sendMessage(conversationId: string, senderId: string, text
   });
 }
 
+/**
+ * Đăng ký lắng nghe realtime tin nhắn của một conversation (sắp theo thời gian tăng dần).
+ * Trả về `Unsubscribe` để gỡ listener khi thoát màn hình.
+ */
 export function subscribeMessages(
   conversationId: string,
   cb: (msgs: ChatMessage[]) => void,
@@ -150,6 +173,9 @@ export function subscribeMessages(
   );
 }
 
+/**
+ * Lấy một lần danh sách tin nhắn của conversation (sắp theo thời gian tăng dần).
+ */
 export async function getMessages(conversationId: string): Promise<ChatMessage[]> {
   const { db } = requireFirebase();
   const q = query(collection(db, 'conversations', conversationId, 'messages'), orderBy('createdAt', 'asc'));

@@ -225,6 +225,10 @@ export async function endExpiredAuctions(): Promise<void> {
 }
 
 /** Lịch sử đấu giá của một sản phẩm (theo giá giảm dần). */
+/**
+ * Lịch sử đấu giá của một sản phẩm (giá giảm dần, cùng giá thì ai đặt trước lên trước),
+ * kèm tên người đấu (bidderName) để hiển thị.
+ */
 export async function getBidsForProduct(productId: string): Promise<Bid[]> {
   const { db } = requireFirebase();
   const q = query(collection(db, 'bids'), where('productId', '==', productId));

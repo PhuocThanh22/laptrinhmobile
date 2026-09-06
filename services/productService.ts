@@ -61,6 +61,10 @@ export async function getAllProducts(): Promise<Product[]> {
   return hydrate(products);
 }
 
+/**
+ * Lấy một sản phẩm theo id. Trả về `null` nếu không tồn tại.
+ * Kèm thông tin người bán (sellerName, sellerAvatar) để hiển thị.
+ */
 export async function getProductById(id: string): Promise<Product | null> {
   const { db } = requireFirebase();
   const snap = await getDoc(doc(db, 'products', id));
@@ -79,6 +83,13 @@ export async function getProductsBySeller(sellerId: string): Promise<Product[]> 
   return hydrate(products);
 }
 
+/**
+ * Tạo sản phẩm mới.
+ * - Sản phẩm giá cố định: status = `active`, lưu `price`.
+ * - Sản phẩm đấu giá: status = `auction_active`, lưu startingPrice/currentPrice/bidIncrement/
+ *   startTime/endTime/bidsCount/winnerId.
+ * - Gắn sellerLocation lấy từ profile người bán (nếu có) để hiển thị vị trí.
+ */
 export async function createProduct(sellerId: string, input: NewProductInput): Promise<Product> {
   const { db } = requireFirebase();
   const now = Date.now();
@@ -128,6 +139,9 @@ export async function createProduct(sellerId: string, input: NewProductInput): P
   return { id: docRef.id, ...snap.data() } as Product;
 }
 
+/**
+ * Cập nhật một/một số trường sản phẩm (name/description được trim trước khi lưu).
+ */
 export async function updateProduct(id: string, input: Partial<NewProductInput>): Promise<void> {
   const { db } = requireFirebase();
   const patch: Record<string, unknown> = { ...input };
@@ -136,6 +150,7 @@ export async function updateProduct(id: string, input: Partial<NewProductInput>)
   await updateDoc(doc(db, 'products', id), patch);
 }
 
+/** Xoá vĩnh viễn một sản phẩm khỏi Firestore. */
 export async function deleteProduct(id: string): Promise<void> {
   const { db } = requireFirebase();
   await deleteDoc(doc(db, 'products', id));

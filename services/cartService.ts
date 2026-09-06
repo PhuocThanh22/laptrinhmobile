@@ -16,6 +16,9 @@ import { requireFirebase } from './firebase';
 import { getProductById } from './productService';
 import type { CartDocument, CartItem, Product } from '@/types';
 
+/**
+ * Đọc document giỏ hàng của user. Nếu chưa tồn tại thì tạo mới giỏ rỗng.
+ */
 async function getCartDoc(userId: string): Promise<CartDocument> {
   const { db } = requireFirebase();
   const snap = await getDoc(doc(db, 'carts', userId));
@@ -27,6 +30,7 @@ async function getCartDoc(userId: string): Promise<CartDocument> {
   return snap.data() as CartDocument;
 }
 
+/** Lấy danh sách item trong giỏ (chỉ productId + quantity). */
 export async function getCart(userId: string): Promise<CartItem[]> {
   const cart = await getCartDoc(userId);
   return cart.items ?? [];
@@ -43,6 +47,11 @@ export async function getCartWithProducts(userId: string): Promise<(CartItem & {
   return result;
 }
 
+/**
+ * Thêm sản phẩm vào giỏ.
+ * - Không cho thêm: sản phẩm đấu giá đang diễn ra, sản phẩm đã bán, đấu giá đã kết thúc.
+ * - Nếu sản phẩm đã có trong giỏ thì tăng số lượng, ngược lại thêm item mới.
+ */
 export async function addToCart(userId: string, productId: string, quantity = 1): Promise<void> {
   const { db } = requireFirebase();
   const product = await getProductById(productId);
@@ -76,6 +85,9 @@ export async function addToCart(userId: string, productId: string, quantity = 1)
   }
 }
 
+/**
+ * Đổi số lượng một item trong giỏ. Nếu quantity <= 0 thì item bị loại bỏ.
+ */
 export async function updateCartQuantity(
   userId: string,
   productId: string,
@@ -89,6 +101,7 @@ export async function updateCartQuantity(
   await updateDoc(doc(db, 'carts', userId), { items, updatedAt: Date.now() });
 }
 
+/** Xoá một sản phẩm khỏi giỏ. */
 export async function removeFromCart(userId: string, productId: string): Promise<void> {
   const { db } = requireFirebase();
   const cart = await getCartDoc(userId);
@@ -96,6 +109,7 @@ export async function removeFromCart(userId: string, productId: string): Promise
   await updateDoc(doc(db, 'carts', userId), { items, updatedAt: Date.now() });
 }
 
+/** Xoá sạch toàn bộ items trong giỏ (dùng sau khi đặt hàng thành công). */
 export async function clearCart(userId: string): Promise<void> {
   const { db } = requireFirebase();
   await updateDoc(doc(db, 'carts', userId), { items: [], updatedAt: Date.now() });

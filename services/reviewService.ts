@@ -7,6 +7,11 @@ import { requireFirebase } from './firebase';
 import { getUsersByIds } from './userService';
 import type { Review } from '@/types';
 
+/**
+ * Tạo đánh giá 1-5 sao cho sản phẩm.
+ * - Chỉ người mua, khi đơn đã `completed`, sản phẩm thuộc đơn đó.
+ * - Mỗi (product + order + reviewer) chỉ được review 1 lần.
+ */
 export async function createReview(input: {
   productId: string;
   orderId: string;
@@ -56,6 +61,9 @@ export async function createReview(input: {
   };
 }
 
+/**
+ * Lấy danh sách đánh giá một sản phẩm (mới nhất trước), kèm tên + avatar người review.
+ */
 export async function getReviewsForProduct(productId: string): Promise<Review[]> {
   const { db } = requireFirebase();
   const q = query(collection(db, 'reviews'), where('productId', '==', productId));
@@ -70,6 +78,9 @@ export async function getReviewsForProduct(productId: string): Promise<Review[]>
   }));
 }
 
+/**
+ * Lấy toàn bộ đánh giá của một/nhiều đơn hàng (query từng order riêng — tránh giới hạn whereIn max 10).
+ */
 export async function getReviewsForOrders(orderIds: string[]): Promise<Review[]> {
   if (!orderIds.length) return [];
   const { db } = requireFirebase();
@@ -83,6 +94,7 @@ export async function getReviewsForOrders(orderIds: string[]): Promise<Review[]>
   return results;
 }
 
+/** Tính điểm trung bình (làm tròn 1 chữ số thập phân) và số lượt đánh giá. */
 export function calcRatingStats(reviews: Review[]): { avg: number; count: number } {
   if (!reviews.length) return { avg: 0, count: 0 };
   const sum = reviews.reduce((s, r) => s + r.rating, 0);
