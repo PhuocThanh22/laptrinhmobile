@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "seed": "node scripts/seed-firestore.js",
     "seed:fresh": "node scripts/seed-firestore.js --fresh",
+    "seed:50": "node scripts/seed-50-products.js",
     "deploy:rules": "node scripts/deploy-rules.js",
     "eas:update": "eas update --channel production",
     "eas:build": "eas build"

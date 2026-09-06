@@ -68,9 +68,30 @@ export default function ProfileScreen() {
   };
 
   const statsItems = [
-    { label: 'Sản phẩm', value: stats.products },
-    { label: 'Đơn hàng', value: stats.orders },
-    { label: 'Đấu giá', value: stats.bids },
+    {
+      key: 'products',
+      icon: Package,
+      title: 'Sản phẩm bán',
+      sub: 'đang đăng bán',
+      value: stats.products,
+      href: '/profile/my-products',
+    },
+    {
+      key: 'orders',
+      icon: ReceiptText,
+      title: 'Đơn hàng mua',
+      sub: 'đã đặt mua',
+      value: stats.orders,
+      href: '/orders/my-orders',
+    },
+    {
+      key: 'bids',
+      icon: Gavel,
+      title: 'Phiếu đấu giá',
+      sub: 'đã tham gia',
+      value: stats.bids,
+      href: '/profile/my-bids',
+    },
   ];
 
   return (
@@ -88,10 +109,15 @@ export default function ProfileScreen() {
         {/* Stats */}
         <View style={styles.statsRow}>
           {statsItems.map((s) => (
-            <View key={s.label} style={styles.statItem}>
+            <Pressable
+              key={s.key}
+              style={({ pressed }) => [styles.statItem, pressed && styles.pressed]}
+              onPress={() => router.push(s.href as never)}>
+              <s.icon size={18} color={Colors.primary} />
               <Text style={styles.statValue}>{s.value}</Text>
-              <Text style={styles.statLabel}>{s.label}</Text>
-            </View>
+              <Text style={styles.statTitle}>{s.title}</Text>
+              <Text style={styles.statSub}>{s.sub}</Text>
+            </Pressable>
           ))}
         </View>
 
@@ -159,18 +185,27 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: Colors.border,
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '900',
     color: Colors.text,
-  },
-  statLabel: {
-    fontSize: 10,
-    color: Colors.textMuted,
     marginTop: 2,
+  },
+  statTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.text,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  statSub: {
+    fontSize: 9,
+    color: Colors.textMuted,
+    marginTop: 1,
+    textAlign: 'center',
   },
   menu: {
     margin: 16,
